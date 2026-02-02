@@ -2,10 +2,14 @@
 # 艦長日誌をGitHubに同期するスクリプト
 
 LOG_DIR="/Users/user/Library/Mobile Documents/com~apple~CloudDocs/DoOS/K_Vault/艦長日誌"
+REPORT_DIR=~/clawd/K_Vault/調査
 REPO_DIR=~/clawd/fleet-log
 
 # 日誌をコピー
 cp "$LOG_DIR"/*.md "$REPO_DIR/logs/" 2>/dev/null
+
+# 調査報告をコピー
+cp "$REPORT_DIR"/*.md "$REPO_DIR/reports/" 2>/dev/null
 
 # Git操作
 cd "$REPO_DIR"
