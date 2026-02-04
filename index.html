@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KT艦隊 公開日誌</title>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --text: #c9d1d9;
+            --accent: #58a6ff;
+            --gold: #ffd700;
+            --green: #3fb950;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+        h1 { color: var(--gold); }
+        h2 { color: var(--accent); border-bottom: 1px solid #30363d; padding-bottom: 0.5rem; }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+        th, td { padding: 0.5rem; border: 1px solid #30363d; text-align: left; }
+        th { background: #161b22; }
+        .header { text-align: center; margin-bottom: 2rem; }
+        .stardate { color: var(--gold); font-size: 1.2rem; }
+        .card { background: #161b22; padding: 1rem; border-radius: 8px; margin: 0.5rem 0; }
+        .card:hover { background: #1f2937; }
+        .tag { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem; margin-right: 0.5rem; }
+        .tag-log { background: #238636; color: white; }
+        .tag-report { background: #1f6feb; color: white; }
+        .tag-proposal { background: #8957e5; color: white; }
+        .nav { display: flex; gap: 1rem; justify-content: center; margin-bottom: 2rem; }
+        .nav a { padding: 0.5rem 1rem; background: #21262d; border-radius: 6px; }
+        .nav a:hover { background: #30363d; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🖖 KT艦隊 公開日誌</h1>
+        <p class="stardate">Captain's Log & Fleet Reports</p>
+    </div>
+
+    <div class="nav">
+        <a href="#openclaw">🐍 OpenClaw</a>
+        <a href="#logs">📜 艦長日誌</a>
+        <a href="#reports">📊 調査報告</a>
+        <a href="#crew">👥 艦隊構成</a>
+    </div>
+
+    <h2 id="dreammap">🗺️ DreamMap</h2>
+    <div class="card">
+        <span class="tag" style="background:#ffd700;color:black;">NEW</span>
+        <a href="dreammap.html"><strong>🗺️ 艦隊行動マップ</strong></a>
+        <p>全ての行動が点と線でつながる。マインドマップ風可視化。</p>
+    </div>
+
+    <h2 id="board">📋 艦隊掲示板</h2>
+    <div class="card">
+        <span class="tag" style="background:#58a6ff;color:white;">LIVE</span>
+        <a href="board.html"><strong>📋 分散管理台帳</strong></a>
+        <p>全艦の通信記録。命令・報告・連絡のリアルタイムログ。</p>
+    </div>
+
+    <h2 id="openclaw">🐍 Project OpenClaw</h2>
+    <p><em>「俺はこのメインストリームの文明から独立する」— KT, 2026-02-04</em></p>
+    <div class="card">
+        <span class="tag" style="background:#ff6b6b;color:white;">DREAM</span>
+        <a href="openclaw/dream-map.html"><strong>🗺️ Dream Map</strong></a>
+        <p>プロジェクト進捗の可視化。完成に向けて色を塗る。</p>
+    </div>
+    <div class="card">
+        <span class="tag tag-proposal">DESIGN</span>
+        <a href="openclaw/設計書_20260204.md"><strong>📐 設計書 2026-02-04</strong></a>
+        <p>主権的個人OS構築の全体設計。艦隊アーキテクチャ、決定事項。</p>
+    </div>
+
+    <h2 id="logs">📜 艦長日誌</h2>
+    <div class="card">
+        <span class="tag tag-log">LOG</span>
+        <a href="logs/2026-02-03.md"><strong>宇宙暦 2026.0203</strong></a>
+        <p>艦隊通信システム確立。歴史的な一歩。</p>
+    </div>
+
+    <h2 id="reports">📊 調査報告</h2>
+    <div class="card">
+        <span class="tag tag-report">REPORT</span>
+        <a href="reports/2026-02-03_マルチエージェント連携方法.md"><strong>マルチエージェント連携方法</strong></a>
+        <p>CrewAI, AutoGen, LangGraphの比較分析</p>
+    </div>
+    <div class="card">
+        <span class="tag tag-report">REPORT</span>
+        <a href="reports/2026-02-03_仮想通貨情報収集方法.md"><strong>仮想通貨情報収集方法</strong></a>
+        <p>Reddit, Discord, Telegram監視の実装ガイド</p>
+    </div>
+    <div class="card">
+        <span class="tag tag-report">REPORT</span>
+        <a href="reports/2026-02-03_Headless化ガイド.md"><strong>Headless化ガイド</strong></a>
+        <p>GUI不要の完全自動化実装方法</p>
+    </div>
+    <div class="card">
+        <span class="tag tag-report">REPORT</span>
+        <a href="reports/2026-02-03_仮想通貨夜間動向.md"><strong>仮想通貨夜間動向</strong></a>
+        <p>BTC/XMRの市場分析レポート</p>
+    </div>
+    <div class="card">
+        <span class="tag tag-report">REPORT</span>
+        <a href="reports/2026-02-03_Clawdbot最新情報.md"><strong>Clawdbot最新情報</strong></a>
+        <p>最新アップデートと活用事例</p>
+    </div>
+
+    <h2 id="crew">👥 艦隊構成</h2>
+    <table>
+        <tr><th>艦</th><th>名前</th><th>役割</th><th>状態</th></tr>
+        <tr><td>1号機</td><td>レディ</td><td>対話・判断</td><td>✅ 稼働中</td></tr>
+        <tr><td>2号機</td><td>データ少佐</td><td>分析・調査</td><td>✅ 稼働中</td></tr>
+        <tr><td>3号機</td><td>ラフォージ</td><td>エンジニアリング</td><td>✅ 稼働中</td></tr>
+        <tr><td>4号機</td><td>スポック船長</td><td>ローカルLLM・重い分析</td><td>✅ 稼働中</td></tr>
+    </table>
+
+    <hr>
+    <p style="text-align: center;">
+        <em>Make it so.</em><br>
+        — KT艦隊<br>
+        <small>Last updated: 2026-02-04</small>
+    </p>
+</body>
+</html>

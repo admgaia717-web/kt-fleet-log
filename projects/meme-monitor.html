@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ミームコイン監視Bot - プロジェクト</title>
+    <style>
+        :root { --bg: #0d1117; --text: #c9d1d9; --gold: #ffd700; --accent: #58a6ff; --green: #3fb950; }
+        body { font-family: 'SF Mono', monospace; background: var(--bg); color: var(--text); max-width: 800px; margin: 0 auto; padding: 2rem; line-height: 1.8; }
+        h1 { color: var(--gold); }
+        h2 { color: var(--accent); border-bottom: 1px solid #30363d; padding-bottom: 0.5rem; }
+        a { color: var(--accent); }
+        .meta { color: #8b949e; margin-bottom: 2rem; }
+        .status { display: inline-block; padding: 0.3rem 0.8rem; border-radius: 20px; background: #3fb95033; color: var(--green); }
+        code { background: #161b22; padding: 0.2rem 0.5rem; border-radius: 4px; }
+        pre { background: #161b22; padding: 1rem; border-radius: 8px; overflow-x: auto; }
+        .links { margin-top: 2rem; padding: 1rem; background: #161b22; border-radius: 8px; }
+        .links h3 { margin-top: 0; color: var(--gold); }
+        .back { margin-top: 2rem; }
+    </style>
+</head>
+<body>
+    <h1>🤖 ミームコイン監視Bot</h1>
+    <p class="meta">
+        シリアル: [0204-001] | 担当: 1号レディ | 
+        <span class="status">✅ 完成</span>
+    </p>
+    
+    <h2>📋 概要</h2>
+    <p>新規ミームコインを早期発見してTelegramに通知するBot。</p>
+    
+    <h2>🎯 目的</h2>
+    <ul>
+        <li>新規トークンの早期発見</li>
+        <li>KTへの即時通知</li>
+        <li>手動購入判断のサポート</li>
+        <li>目標: 月1万円の収益</li>
+    </ul>
+    
+    <h2>🔧 技術仕様</h2>
+    <ul>
+        <li>データソース: DEXScreener API（無料）</li>
+        <li>対象チェーン: Solana</li>
+        <li>フィルタ: 流動性$10k+、取引量$1k+</li>
+        <li>通知: Telegram Bot</li>
+        <li>実行間隔: 5分</li>
+    </ul>
+    
+    <h2>📁 ファイル</h2>
+    <pre>~/clawd/projects/meme-monitor/
+├── monitor.py        # メインスクリプト
+├── start_monitor.sh  # 起動スクリプト
+├── .env.example      # 設定テンプレート
+└── README.md         # ドキュメント</pre>
+    
+    <h2>🚀 使用方法</h2>
+    <pre>cd ~/clawd/projects/meme-monitor
+cp .env.example .env
+# .envにTelegram Bot Token設定
+./start_monitor.sh</pre>
+    
+    <div class="links">
+        <h3>🔗 関連リンク</h3>
+        <ul>
+            <li><a href="../actions/kucoin-api.html">💋 KuCoin API接続</a></li>
+            <li><a href="../goals/money.html">💰 お金の最大化</a></li>
+            <li><a href="openclaw.html">🐍 OpenClaw</a></li>
+            <li><a href="../logs/2026-02-04.html">📅 2026-02-04の日誌</a></li>
+        </ul>
+    </div>
+    
+    <div class="back">
+        <a href="../dreammap.html">← DreamMapに戻る</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project OpenClaw - Dream Map</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
+            min-height: 100vh;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            color: #fff;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #00d4ff, #ff00ff, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmer 3s infinite;
+        }
+        @keyframes shimmer {
+            0%, 100% { filter: hue-rotate(0deg); }
+            50% { filter: hue-rotate(30deg); }
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        .progress-bar {
+            width: 80%;
+            max-width: 600px;
+            margin: 0 auto 40px;
+            background: #222;
+            border-radius: 20px;
+            padding: 5px;
+        }
+        .progress-fill {
+            height: 30px;
+            border-radius: 15px;
+            background: linear-gradient(90deg, #00ff88, #00d4ff, #ff00ff);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        .map-container {
+            position: relative;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: 800px;
+        }
+        svg {
+            width: 100%;
+            height: 800px;
+        }
+        .node {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .node:hover {
+            filter: brightness(1.3);
+        }
+        .node-circle {
+            stroke-width: 3;
+            transition: all 0.3s ease;
+        }
+        .node-circle.incomplete {
+            fill: #1a1a2e;
+            stroke: #444;
+        }
+        .node-circle.in-progress {
+            fill: #1a1a2e;
+            stroke: #ffaa00;
+            animation: pulse 2s infinite;
+        }
+        .node-circle.complete {
+            fill: url(#completeGradient);
+            stroke: #00ff88;
+            filter: drop-shadow(0 0 10px #00ff88);
+        }
+        @keyframes pulse {
+            0%, 100% { stroke-opacity: 1; }
+            50% { stroke-opacity: 0.5; }
+        }
+        .node-label {
+            fill: #fff;
+            font-size: 11px;
+            text-anchor: middle;
+            pointer-events: none;
+        }
+        .node-icon {
+            font-size: 20px;
+            text-anchor: middle;
+            pointer-events: none;
+        }
+        .connection {
+            stroke-width: 2;
+            fill: none;
+            transition: all 0.3s ease;
+        }
+        .connection.inactive { stroke: #333; }
+        .connection.active {
+            stroke: url(#lineGradient);
+            filter: drop-shadow(0 0 5px #00d4ff);
+        }
+        .legend {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #333;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+            font-size: 14px;
+        }
+        .legend-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .legend-dot.complete { background: linear-gradient(135deg, #00ff88, #00d4ff); }
+        .legend-dot.in-progress { background: #1a1a2e; border: 2px solid #ffaa00; }
+        .legend-dot.incomplete { background: #1a1a2e; border: 2px solid #444; }
+        .stats {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #888;
+        }
+        .stats span { color: #00ff88; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>🐍 Project OpenClaw</h1>
+    <p class="subtitle">主権的個人OS — Dream Map</p>
+    
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressFill" style="width: 35%;">35% Complete</div>
+    </div>
+
+    <div class="map-container">
+        <svg id="dreamMap" viewBox="0 0 1200 800">
+            <defs>
+                <linearGradient id="completeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#00ff88"/>
+                    <stop offset="100%" style="stop-color:#00d4ff"/>
+                </linearGradient>
+                <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" style="stop-color:#00ff88"/>
+                    <stop offset="50%" style="stop-color:#00d4ff"/>
+                    <stop offset="100%" style="stop-color:#ff00ff"/>
+                </linearGradient>
+            </defs>
+            
+            <!-- Connections -->
+            <g id="connections">
+                <!-- Step 0 to Step 1 -->
+                <path class="connection active" d="M200,150 Q300,150 350,250"/>
+                <path class="connection active" d="M200,150 Q250,200 300,300"/>
+                
+                <!-- Step 1 connections -->
+                <path class="connection active" d="M400,250 Q450,300 500,350"/>
+                <path class="connection active" d="M350,300 Q400,350 450,400"/>
+                
+                <!-- Step 2 connections -->
+                <path class="connection inactive" d="M550,350 Q600,400 650,450"/>
+                <path class="connection inactive" d="M500,400 Q550,450 600,500"/>
+                
+                <!-- Step 3 connections -->
+                <path class="connection inactive" d="M700,450 Q750,500 800,550"/>
+                <path class="connection inactive" d="M650,500 Q700,550 750,600"/>
+                
+                <!-- Step 4 connections -->
+                <path class="connection inactive" d="M850,550 Q900,600 950,650"/>
+                
+                <!-- Cross connections -->
+                <path class="connection active" d="M400,250 Q500,200 600,250"/>
+                <path class="connection inactive" d="M600,500 Q700,450 800,500"/>
+            </g>
+            
+            <!-- Nodes -->
+            <g id="nodes">
+                <!-- CORE: KT -->
+                <g class="node" data-id="kt" data-status="complete">
+                    <circle class="node-circle complete" cx="600" cy="80" r="45"/>
+                    <text class="node-icon" x="600" y="75">👑</text>
+                    <text class="node-label" x="600" y="95">KT（艦長）</text>
+                </g>
+                
+                <!-- Step 0: Hardware -->
+                <g class="node" data-id="mac" data-status="complete">
+                    <circle class="node-circle complete" cx="200" cy="150" r="35"/>
+                    <text class="node-icon" x="200" y="145">💻</text>
+                    <text class="node-label" x="200" y="165">64GB Mac</text>
+                </g>
+                
+                <!-- Step 1: Neural Core -->
+                <g class="node" data-id="ollama" data-status="complete">
+                    <circle class="node-circle complete" cx="400" cy="250" r="35"/>
+                    <text class="node-icon" x="400" y="245">🦙</text>
+                    <text class="node-label" x="400" y="265">Ollama</text>
+                </g>
+                
+                <g class="node" data-id="qwen" data-status="complete">
+                    <circle class="node-circle complete" cx="300" cy="300" r="30"/>
+                    <text class="node-icon" x="300" y="295">🧠</text>
+                    <text class="node-label" x="300" y="315">Qwen 72B</text>
+                </g>
+                
+                <g class="node" data-id="dolphin" data-status="in-progress">
+                    <circle class="node-circle in-progress" cx="500" cy="280" r="30"/>
+                    <text class="node-icon" x="500" y="275">🐬</text>
+                    <text class="node-label" x="500" y="295">Dolphin 70B</text>
+                </g>
+                
+                <!-- Fleet -->
+                <g class="node" data-id="lady" data-status="complete">
+                    <circle class="node-circle complete" cx="150" cy="350" r="30"/>
+                    <text class="node-icon" x="150" y="345">💋</text>
+                    <text class="node-label" x="150" y="365">1号 レディ</text>
+                </g>
+                
+                <g class="node" data-id="data" data-status="complete">
+                    <circle class="node-circle complete" cx="250" cy="420" r="30"/>
+                    <text class="node-icon" x="250" y="415">🖥️</text>
+                    <text class="node-label" x="250" y="435">2号 データ</text>
+                </g>
+                
+                <g class="node" data-id="laforge" data-status="complete">
+                    <circle class="node-circle complete" cx="350" cy="480" r="30"/>
+                    <text class="node-icon" x="350" y="475">⚙️</text>
+                    <text class="node-label" x="350" y="495">3号 ラフォージ</text>
+                </g>
+                
+                <g class="node" data-id="spock" data-status="complete">
+                    <circle class="node-circle complete" cx="450" cy="400" r="35"/>
+                    <text class="node-icon" x="450" y="395">🖖</text>
+                    <text class="node-label" x="450" y="415">4号 スポック</text>
+                </g>
+                
+                <!-- Step 2: Data -->
+                <g class="node" data-id="kvault" data-status="complete">
+                    <circle class="node-circle complete" cx="600" cy="350" r="35"/>
+                    <text class="node-icon" x="600" y="345">📁</text>
+                    <text class="node-label" x="600" y="365">K_Vault</text>
+                </g>
+                
+                <g class="node" data-id="qdrant" data-status="incomplete">
+                    <circle class="node-circle incomplete" cx="700" cy="400" r="30"/>
+                    <text class="node-icon" x="700" y="395">🔍</text>
+                    <text class="node-label" x="700" y="415">Qdrant</text>
+                </g>
+                
+                <g class="node" data-id="obsidian" data-status="in-progress">
+                    <circle class="node-circle in-progress" cx="550" cy="450" r="30"/>
+                    <text class="node-icon" x="550" y="445">💎</text>
+                    <text class="node-label" x="550" y="465">Obsidian</text>
+                </g>
+                
+                <!-- Step 3: Orchestration -->
+                <g class="node" data-id="n8n" data-status="incomplete">
+                    <circle class="node-circle incomplete" cx="800" cy="500" r="35"/>
+                    <text class="node-icon" x="800" y="495">🔄</text>
+                    <text class="node-label" x="800" y="515">n8n</text>
+                </g>
+                
+                <g class="node" data-id="opennotebook" data-status="in-progress">
+                    <circle class="node-circle in-progress" cx="650" cy="520" r="30"/>
+                    <text class="node-icon" x="650" y="515">📓</text>
+                    <text class="node-label" x="650" y="535">Open Notebook</text>
+                </g>
+                
+                <!-- Step 4: Revenue -->
+                <g class="node" data-id="trading" data-status="incomplete">
+                    <circle class="node-circle incomplete" cx="900" cy="600" r="35"/>
+                    <text class="node-icon" x="900" y="595">📈</text>
+                    <text class="node-label" x="900" y="615">自動売買</text>
+                </g>
+                
+                <g class="node" data-id="api" data-status="incomplete">
+                    <circle class="node-circle incomplete" cx="750" cy="620" r="30"/>
+                    <text class="node-icon" x="750" y="615">🔌</text>
+                    <text class="node-label" x="750" y="635">API収益化</text>
+                </g>
+                
+                <!-- Security -->
+                <g class="node" data-id="killswitch" data-status="in-progress">
+                    <circle class="node-circle in-progress" cx="1000" cy="500" r="35"/>
+                    <text class="node-icon" x="1000" y="495">🛑</text>
+                    <text class="node-label" x="1000" y="515">キルスイッチ</text>
+                </g>
+                
+                <!-- GOAL -->
+                <g class="node" data-id="independence" data-status="incomplete">
+                    <circle class="node-circle incomplete" cx="1050" cy="680" r="50"/>
+                    <text class="node-icon" x="1050" y="670">🏴</text>
+                    <text class="node-label" x="1050" y="700">独立</text>
+                </g>
+            </g>
+        </svg>
+    </div>
+
+    <div class="stats">
+        完了: <span id="completeCount">9</span> / 進行中: <span id="progressCount">4</span> / 未着手: <span id="incompleteCount">6</span>
+    </div>
+
+    <div class="legend">
+        <div class="legend-item"><div class="legend-dot complete"></div> 完了</div>
+        <div class="legend-item"><div class="legend-dot in-progress"></div> 進行中</div>
+        <div class="legend-item"><div class="legend-dot incomplete"></div> 未着手</div>
+    </div>
+
+    <script>
+        // ノードの状態を更新する関数
+        function updateNode(nodeId, status) {
+            const node = document.querySelector(`[data-id="${nodeId}"]`);
+            if (node) {
+                node.dataset.status = status;
+                const circle = node.querySelector('.node-circle');
+                circle.className = `node-circle ${status}`;
+            }
+            updateStats();
+        }
+
+        // 統計を更新
+        function updateStats() {
+            const nodes = document.querySelectorAll('.node');
+            let complete = 0, progress = 0, incomplete = 0;
+            nodes.forEach(node => {
+                switch(node.dataset.status) {
+                    case 'complete': complete++; break;
+                    case 'in-progress': progress++; break;
+                    case 'incomplete': incomplete++; break;
+                }
+            });
+            document.getElementById('completeCount').textContent = complete;
+            document.getElementById('progressCount').textContent = progress;
+            document.getElementById('incompleteCount').textContent = incomplete;
+            
+            const total = complete + progress + incomplete;
+            const percent = Math.round((complete / total) * 100);
+            const fill = document.getElementById('progressFill');
+            fill.style.width = percent + '%';
+            fill.textContent = percent + '% Complete';
+        }
+
+        // 初期化
+        updateStats();
+    </script>
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KT資産ダッシュボード</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Courier New', monospace; 
+            background: #0a0a0a; 
+            color: #00ff00; 
+            padding: 20px;
+            min-height: 100vh;
+        }
+        h1 { color: #00ff00; margin-bottom: 10px; }
+        .updated { color: #666; font-size: 12px; margin-bottom: 30px; }
+        .section { 
+            background: #111; 
+            border: 1px solid #00ff00; 
+            padding: 20px; 
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        h2 { color: #00ff00; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #333; }
+        th { color: #888; }
+        .total { color: #ffff00; font-weight: bold; font-size: 18px; }
+        .address { font-size: 11px; color: #888; word-break: break-all; }
+        .strategy { background: #1a1a00; border-color: #ffff00; }
+        .strategy h2 { color: #ffff00; }
+        .warning { color: #ff6600; }
+        .zero { color: #666; }
+    </style>
+    <script>
+        // 資産情報を取得・更新する関数
+        async function fetchAssetData() {
+            try {
+                // KuCoin API呼び出し（ローカルで秘密鍵から生成）
+                const response = await fetch('/api/assets');
+                const data = await response.json();
+
+                // 各セクションを更新
+                document.getElementById('total-value').textContent = `$${data.totalUSD}`;
+                document.getElementById('lastUpdate').textContent = new Date().toLocaleString('ja-JP', {
+                    year: 'numeric', month: '2-digit', day: '2-digit', 
+                    hour: '2-digit', minute: '2-digit', second: '2-digit'
+                });
+
+                // KuCoin資産テーブル
+                const kucoinTable = document.querySelector('#kucoin-table tbody');
+                kucoinTable.innerHTML = data.kucoin.map(asset => `
+                    <tr>
+                        <td>${asset.symbol}</td>
+                        <td>${asset.amount}</td>
+                        <td>$${asset.usdValue}</td>
+                    </tr>
+                `).join('') + `
+                    <tr class="total">
+                        <td colspan="2">合計</td>
+                        <td>$${data.kucoin.reduce((sum, a) => sum + a.usdValue, 0)}</td>
+                    </tr>
+                `;
+
+                // その他の資産（Solana, Polygon）も同様に更新
+                document.getElementById('solana-balance').textContent = `${data.solana.balance} SOL`;
+                document.getElementById('solana-usd').textContent = `$${data.solana.usdValue}`;
+
+                document.getElementById('polygon-balance').textContent = `$${data.polygon.usdValue}`;
+            } catch (error) {
+                console.error('資産情報の更新に失敗:', error);
+            }
+        }
+
+        // 初回読み込み
+        fetchAssetData();
+
+        // 定期的に更新 (5分ごと)
+        setInterval(fetchAssetData, 5 * 60 * 1000);
+    </script>
+</head>
+<body>
+    <h1>💰 KT資産ダッシュボード</h1>
+    <p class="updated">最終更新: <span id="lastUpdate">2026-02-04 20:48 JST</span></p>
+
+    <div class="section">
+        <h2>📊 総資産</h2>
+        <p id="total-value" class="total">~$11,280 USD</p>
+    </div>
+
+    <div class="section">
+        <h2>🏦 KuCoin（CEX）</h2>
+        <table id="kucoin-table">
+            <thead>
+                <tr><th>通貨</th><th>数量</th><th>概算USD</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>USDT</td><td>2,374</td><td>$2,374</td></tr>
+                <tr><td>XMR</td><td>~14</td><td>~$3,000</td></tr>
+                <tr><td>PAXG</td><td>~0.9</td><td>~$2,500</td></tr>
+                <tr><td>BTC</td><td>~0.03</td><td>~$3,100</td></tr>
+                <tr><td>KCS</td><td>~10</td><td>~$110</td></tr>
+                <tr class="total"><td colspan="2">合計</td><td>~$11,000</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>🟣 Solana ウォレット</h2>
+        <p class="address">CCRXLZKrQw8XirEximSfhqLTF5aJ1qrvBx1KuiVmoTHC</p>
+        <table>
+            <tr><th>通貨</th><th>数量</th><th>概算USD</th></tr>
+            <tr><td>SOL</td><td id="solana-balance">1.192</td><td id="solana-usd">~$280</td></tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>🔷 Polygon ウォレット</h2>
+        <p class="address">0xf663dE57b9d93Ca69fB66FC4D41Af7632F0a37C4</p>
+        <table>
+            <tr><th>通貨</th><th>数量</th><th>概算USD</th></tr>
+            <tr class="zero"><td>(なし)</td><td>0</td><td id="polygon-balance">$0</td></tr>
+        </table>
+        <p class="warning">⚠️ 未入金 - $110送金予定</p>
+    </div>
+
+    <div class="section strategy">
+        <h2>📐 資産配分戦略</h2>
+        <ul style="list-style: none; padding: 10px;">
+            <li>• <strong>99% 長期保有</strong>: PAXG:XMR:BTC = 33:33:33</li>
+            <li>• <strong>1% ギャンブル</strong>: ~$110（現在SOL 1.192）</li>
+            <li style="margin-top: 10px; color: #888;">成功したら → 90%長期 + 10%ギャンブルに移行</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>📝 送金履歴（レディ実行分）</h2>
+        <table>
+            <tr><th>日付</th><th>From→To</th><th>通貨</th><th>数量</th></tr>
+            <tr>
+                <td>2026-02-04</td>
+                <td>KuCoin → Solana</td>
+                <td>SOL</td>
+                <td>1.192</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>🔐 秘密鍵保管場所</h2>
+        <script>
+            // 秘密鍵の場所をJavaScriptで動的に追加
+            window.keyLocations = {
+                'solana_wallet': 'GOLD_VAULT/sol.json',
+                'polygon_wallet': 'GOLD_VAULT/poly.json',
+                'kucoin_api': 'SECRETS/kc.md'
+            };
+        </script>
+        <div id="key-locations-display"></div>
+        <script>
+            // 鍵の場所を表示（暗号化された状態で）
+            document.addEventListener('DOMContentLoaded', function() {
+                const display = document.getElementById('key-locations-display');
+                const locations = window.keyLocations;
+                
+                const locationsList = Object.entries(locations).map(([key, path]) => {
+                    // 簡単な難読化（実際のデコードはサーバーサイドで行う）
+                    const encodedPath = btoa(path).replace(/=/g, '').split('').reverse().join('');
+                    return `<li style="color: #888;">• ${key}: <span style="font-size: 11px;">${encodedPath}</span></li>`;
+                }).join('');
+                
+                display.innerHTML = `<ul style="list-style: none; padding: 10px;">${locationsList}</ul>`;
+            });
+        </script>
+    </div>
+
+</body>
+</html>
