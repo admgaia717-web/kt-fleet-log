@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>KT Fleet Logs</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1 { color: #333; }
+        .log-list { list-style-type: none; padding: 0; }
+        .log-list li { margin-bottom: 10px; }
+        .log-list a { text-decoration: none; color: #0066cc; }
+        .log-list a:hover { text-decoration: underline; }
+        #search { width: 100%; padding: 10px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <h1>KT Fleet Logs</h1>
+    
+    <input type="text" id="search" placeholder="ログを検索..." oninput="searchLogs()">
+    
+    <ul id="log-list" class="log-list">
+        <li><a href="2026-02-04/1号-レディ.html">2026-02-04 - 1号-レディ</a></li>
+    </ul>
+
+    <script>
+        function searchLogs() {
+            const searchValue = document.getElementById('search').value.toLowerCase();
+            const logList = document.getElementById('log-list');
+            const logs = logList.getElementsByTagName('li');
+            
+            for (let log of logs) {
+                const text = log.textContent.toLowerCase();
+                log.style.display = text.includes(searchValue) ? '' : 'none';
+            }
+        }
+    </script>
+</body>
+</html>
