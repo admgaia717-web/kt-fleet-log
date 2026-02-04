@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>仮想通貨掲示板・コミュニティ情報自動収集方法調査 - KT艦隊</title>
+    <style>
+        :root { --bg: #0d1117; --text: #c9d1d9; --accent: #58a6ff; --gold: #ffd700; }
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); max-width: 900px; margin: 0 auto; padding: 2rem; line-height: 1.8; }
+        h1, h2, h3 { color: var(--gold); }
+        a { color: var(--accent); }
+        pre { background: #161b22; padding: 1rem; border-radius: 8px; overflow-x: auto; }
+        code { background: #161b22; padding: 0.2rem 0.4rem; border-radius: 4px; }
+        blockquote { border-left: 3px solid var(--accent); padding-left: 1rem; color: #8b949e; }
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+        th, td { padding: 0.5rem; border: 1px solid #30363d; }
+        th { background: #161b22; }
+        .back { margin-bottom: 1rem; }
+        .back a { padding: 0.5rem 1rem; background: #21262d; border-radius: 6px; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="back"><a href="/">← トップに戻る</a></div>
+<h1>仮想通貨掲示板・コミュニティ情報自動収集方法調査</h1>
+<br>
+<h2>調査実施日</h2>
+2026年2月3日
+<br>
+<h2>調査目的</h2>
+仮想通貨の掲示板・コミュニティからユニークな情報を自動収集するシステムの構築方法を調査し、Clawdbotと連携した効率的な情報収集・分析フローを確立する。
+<br>
+---
+<br>
+<h2>1. Reddit API / スクレイピング方法</h2>
+<br>
+<h3>Reddit公式API</h3>
+<li><strong>認証方式</strong>: OAuth2認証が必要</li>
+<li><strong>レート制限</strong>: 認証済みアプリで100クエリ/分</li>
+<li><strong>主要エンドポイント</strong>:</li>
+  - <code>https://oauth.reddit.com/r/cryptocurrency/new</code> - 最新投稿
+  - <code>https://oauth.reddit.com/r/cryptocurrency/comments/{article}</code> - コメント取得
+  - <code>https://oauth.reddit.com/search</code> - キーワード検索
+<br>
+<h3>実装例（Python + PRAW）</h3>
+<code></code>`python
+import praw
+<br>
+reddit = praw.Reddit(
+    client_id='YOUR_ID',
+    client_secret='YOUR_SECRET', 
+    user_agent='crypto_collector v1.0'
+)
+<br>
+subreddit = reddit.subreddit('cryptocurrency')
+for post in subreddit.hot(limit=100):
+    print(post.title, post.score, post.created_utc)
+<code></code>`
+<br>
+<h3>対象サブレディット</h3>
+<li><strong>r/CryptoCurrency</strong> - 一般的な仮想通貨ディスカッション</li>
+<li><strong>r/CryptoCurrency_JPN</strong> - 日本語仮想通貨コミュニティ</li>
+<li><strong>r/Monero</strong> - Monero専門コミュニティ</li>
+<li><strong>r/Bitcoin</strong> - Bitcoin専門コミュニティ</li>
+<br>
+<h3>制限事項</h3>
+<li>Pushshift.io（大量データ取得）は現在停止</li>
+<li>商用利用はReddit Enterprise API必須</li>
+<li>直接スクレイピングは利用規約違反</li>
+<br>
+<h3>代替手段</h3>
+<li><strong>CryptoCompare API</strong>: Redditの集約センチメント提供</li>
+<li><strong>PulseReddit Dataset</strong>: 2024-2025年の研究用データセット</li>
+<br>
+---
+<br>
+<h2>2. Discord監視方法</h2>
+<br>
+<h3>Bot作成手順</h3>
+1. <strong>Discord Developer Portal</strong>でアプリ作成
+2. Botトークン取得（Reset Tokenで生成）
+3. OAuth2でBot招待：<code>bot</code>と<code>applications.commands</code>権限
+4. チャンネル権限：<code>Send Messages</code>、<code>Read Message History</code>、<code>Embed Links</code>、<code>View Channels</code>
+<br>
+<h3>実装例（discord.py）</h3>
+<code></code>`python
+import discord
+from discord.ext import commands, tasks
+import requests
+<br>
+intents = discord.Intents.default()
+intents.message_content = True
+bot = commands.Bot(command_prefix='!', intents=intents)
+<br>
+@bot.event
+async def on_message(message):
+    if message.channel.id == CHANNEL_ID and 'BTC' in message.content.upper():
+        print(f"収集: {message.content}")
+        # ここでDB保存やAPI送信処理
+    await bot.process_commands(message)
+<br>
+@tasks.loop(minutes=5)
+async def monitor_channel():
+    # 定期的な価格監視や通知
+    pass
+<br>
+bot.run(TOKEN)
+<code></code>`
+<br>
+<h3>Webhook活用</h3>
+<li><code>discord.Webhook.from_url()</code>で外部通知</li>
+<li>外部APIと連携してリアルタイム通知</li>
+<br>
+<h3>既存ツール</h3>
+<li>Streamlitでダッシュボード作成</li>
+<li>AIフィルタリングで詐欺検知</li>
+<br>
+<h3>セキュリティ注意点</h3>
+<li>Discordトークン窃取マルウェア対策</li>
+<li>環境変数（.env）の適切な保護</li>
+<li>Bot権限の最小限設定</li>
+<br>
+---
+<br>
+<h2>3. Telegram監視方法</h2>
+<br>
+<h3>Bot API活用</h3>
+1. <strong>@BotFather</strong>でBot作成、APIトークン取得
+2. 監視対象チャンネルにBotを管理者として追加
+3. <strong>Updates API</strong>または<strong>Webhooks</strong>で新着メッセージ監視
+<br>
+<h3>チャンネル購読実装</h3>
+<code></code>`python
+import telebot
+<br>
+bot = telebot.TeleBot("YOUR_BOT_TOKEN")
+<br>
+@bot.channel_post_handler(func=lambda message: True)
+def handle_channel_post(message):
+    if "仮想通貨" in message.text or "crypto" in message.text.lower():
+        print(f"収集: {message.text} from {message.chat.title}")
+        # DB保存や通知処理
+<br>
+bot.polling()  # Long Polling
+<code></code>`
+<br>
+<h3>更新受信方法</h3>
+<li><strong>Long Polling</strong>: <code>getUpdates</code>でポーリング</li>
+<li><strong>Webhooks</strong>: <code>setWebhook</code>で即時プッシュ受信（推奨）</li>
+<br>
+<h3>TONブロックチェーン統合</h3>
+<li>Bot API + TON SDKでトークン転送監視</li>
+<li>Mini Apps APIでブロックチェーン取引自動収集</li>
+<br>
+<h3>制限事項</h3>
+<li>公開チャンネルまたは管理者権限必須</li>
+<li>プライベートチャンネルは監視不可</li>
+<li>レート制限：30メッセージ/秒</li>
+<br>
+---
+<br>
+<h2>4. Twitter/X監視</h2>
+<br>
+<h3>API有料化の現状</h3>
+<li><strong>無料プラン廃止</strong>: Basic プラン月100ドル〜</li>
+<li><strong>アカデミックAPI停止</strong>: 2024年以降研究利用不可</li>
+<li>利用規約で大量アクセス時の賠償責任発生</li>
+<br>
+<h3>代替手段</h3>
+<br>
+#### ウェブスクレイピング
+<code></code>`python
+import snscrape.modules.twitter as sntwitter
+import pandas as pd
+<br>
+query = "#Bitcoin OR #仮想通貨 lang:ja since:2026-01-01"
+tweets = []
+for i, tweet in enumerate(sntwitter.TwitterSearchScraper(query).get_items()):
+    if i > 100: break
+    tweets.append([tweet.date, tweet.content, tweet.user.username])
+df = pd.DataFrame(tweets, columns=['Date', 'Content', 'User'])
+<code></code>`
+<br>
+#### ツール・ライブラリ
+<li><strong>snscrape</strong>: 非公式クローラー（GitHub維持中）</li>
+<li><strong>Twint</strong>: 過去ツイート収集</li>
+<li><strong>BeautifulSoup + Selenium</strong>: ブラウザ自動化</li>
+<br>
+#### 分散型SNS移行
+<li><strong>Bluesky</strong>: 2024年2月から招待不要、AT Protocol公開</li>
+<li>仮想通貨コミュニティの一部移行</li>
+<li>無料API相当の監視機能</li>
+<br>
+<h3>リスク・注意点</h3>
+<li>2024年10月規約で「大量アクセス賠償金」規定</li>
+<li>個人利用に留める（商用避ける）</li>
+<li>プロキシ・レート制限回避必須</li>
+<br>
+---
+<br>
+<h2>5. 既存の情報収集ツール</h2>
+<br>
+<h3>商用プラットフォーム</h3>
+<br>
+#### LunarCrush
+<li><strong>データソース</strong>: X、YouTube、Reddit、TikTok、ニュース</li>
+<li><strong>独自メトリクス</strong>: AltRank™、Galaxy Score™</li>
+<li><strong>アクセス</strong>: 無料版・有料版・API提供</li>
+<li><strong>ランキング</strong>: グローバル#136,944（2025年2月時点）</li>
+<br>
+#### Santiment
+<li>仮想通貨向けソーシャル分析ツール</li>
+<li>グローバルランキング#271,413</li>
+<br>
+#### その他
+<li><strong>CryptoCompare</strong>: 多プラットフォーム集約、無料API有り</li>
+<li><strong>Messari</strong>: 2018年設立、データ透明化目標</li>
+<br>
+<h3>オープンソースツール</h3>
+<br>
+#### CCXT (CryptoCurrency eXchange Trading Library)
+<li><strong>機能</strong>: 100以上の取引所API統一</li>
+<li><strong>言語</strong>: Python/JavaScript/PHP等</li>
+<li><strong>用途</strong>: 市場データ取得、注文実行、価格監視</li>
+<br>
+#### Freqtrade
+<li><strong>機能</strong>: Pythonベース仮想通貨トレーディングボット</li>
+<li><strong>特徴</strong>: バックテスト、ML統合、Telegram通知</li>
+<li><strong>連携</strong>: CCXT内蔵</li>
+<br>
+#### TradingGym系
+<li><strong>機能</strong>: 強化学習環境（Gym形式）</li>
+<li><strong>用途</strong>: AIエージェント訓練、シミュレーション</li>
+<li><strong>連携</strong>: CCXT でリアル市場データ</li>
+<br>
+#### CryptoSignal
+<li><strong>機能</strong>: Pythonシグナル生成・バックテスト</li>
+<li><strong>特徴</strong>: TA-Lib統合、Telegram/Slack通知</li>
+<br>
+<h3>2024年トレンド</h3>
+<li>金融分野オープンソース貢献26%増加</li>
+<li>GitHub標準化・オープンデータ活用進展</li>
+<li>セキュリティ: マルウェア（ViperSoftX）増加注意</li>
+<br>
+---
+<br>
+<h2>6. Clawdbotとの連携方法</h2>
+<br>
+<h3>自動収集 → 要約 → 通知フロー</h3>
+<br>
+#### 1. データ収集層
+<code></code>`
+Reddit API → Python スクレイピング → ローカルDB/JSON
+Discord Bot → メッセージフック → データベース 
+Telegram Bot → チャンネル監視 → ストレージ
+X/代替手段 → 定期収集 → データ蓄積
+<code></code>`
+<br>
+#### 2. 前処理・フィルタリング
+<code></code>`python
+<h1>重複除去・キーワードフィルタリング例</h1>
+def filter_crypto_content(content):
+    crypto_keywords = ['BTC', 'ETH', 'XRP', 'ADA', 'SOL', '仮想通貨', 'crypto']
+    return any(keyword.lower() in content.lower() for keyword in crypto_keywords)
+<br>
+def remove_duplicates(data_list):
+    seen = set()
+    unique_data = []
+    for item in data_list:
+        content_hash = hash(item['content'])
+        if content_hash not in seen:
+            seen.add(content_hash)
+            unique_data.append(item)
+    return unique_data
+<code></code>`
+<br>
+#### 3. Webhook統合フロー
+<code></code>`python
+import requests
+from typing import Dict, List
+<br>
+class ClawdbotConnector:
+    def __init__(self, webhook_url: str, auth_token: str):
+        self.webhook_url = webhook_url
+        self.auth_token = auth_token
+    
+    def send_crypto_update(self, data: Dict):
+        headers = {
+            'Authorization': f'Bearer {self.auth_token}',
+            'Content-Type': 'application/json'
+        }
+        
+        payload = {
+            'type': 'crypto_intelligence',
+            'data': data,
+            'timestamp': int(time.time())
+        }
+        
+        response = requests.post(
+            self.webhook_url,
+            json=payload,
+            headers=headers
+        )
+        return response.status_code == 200
+    
+    def batch_send_summary(self, collected_data: List[Dict]):
+        summary = self.generate_summary(collected_data)
+        return self.send_crypto_update({
+            'summary': summary,
+            'raw_count': len(collected_data),
+            'sources': list(set([item['source'] for item in collected_data]))
+        })
+<code></code>`
+<br>
+#### 4. AIによる要約生成
+<code></code>`python
+def generate_summary(crypto_data: List[Dict]) -> str:
+    # 既存LLMエンドポイント（Claude/GPT）で要約
+    combined_text = "\n".join([item['content'] for item in crypto_data])
+    
+    prompt = f"""
+    以下の仮想通貨関連情報を要約してください：
+    - 主要なトレンド
+    - 重要なニュース
+    - センチメント分析
+    
+    データ:
+    {combined_text[:4000]}  # トークン制限考慮
+    """
+    
+    # Clawdbotの既存AI機能を活用
+    return ai_summarize(prompt)
+<code></code>`
+<br>
+#### 5. 通知・配信
+<li><strong>Telegram</strong>: Clawdbot既存チャンネル統合</li>
+<li><strong>Discord</strong>: Webhookで指定チャンネル投稿</li>
+<li><strong>メール</strong>: 重要度高い情報のみ</li>
+<li><strong>ダッシュボード</strong>: Webインターフェース表示</li>
+<br>
+<h3>リアルタイム監視設定</h3>
+<code></code>`python
+import schedule
+import time
+<br>
+def collect_and_notify():
+    # 各ソースから収集
+    reddit_data = collect_reddit_data()
+    discord_data = collect_discord_data() 
+    telegram_data = collect_telegram_data()
+    
+    # 統合・フィルタリング
+    all_data = reddit_data + discord_data + telegram_data
+    filtered_data = filter_crypto_content(all_data)
+    unique_data = remove_duplicates(filtered_data)
+    
+    if unique_data:
+        # Clawdbotに送信
+        connector = ClawdbotConnector(WEBHOOK_URL, AUTH_TOKEN)
+        success = connector.batch_send_summary(unique_data)
+        print(f"通知送信: {'成功' if success else '失敗'}")
+<br>
+<h1>スケジュール設定</h1>
+schedule.every(30).minutes.do(collect_and_notify)  # 30分ごと
+schedule.every().day.at("09:00").do(lambda: collect_and_notify())  # 毎朝9時
+<br>
+while True:
+    schedule.run_pending()
+    time.sleep(1)
+<code></code>`
+<br>
+---
+<br>
+<h2>実装推奨事項</h2>
+<br>
+<h3>1. 段階的実装</h3>
+1. <strong>Phase 1</strong>: Reddit API + Discord Bot（実装容易）
+2. <strong>Phase 2</strong>: Telegram Bot追加
+3. <strong>Phase 3</strong>: X代替手段・既存ツール統合
+4. <strong>Phase 4</strong>: AI要約・リアルタイム通知
+<br>
+<h3>2. セキュリティ・法的考慮</h3>
+<li><strong>環境変数</strong>でAPIキー管理</li>
+<li><strong>レート制限</strong>遵守</li>
+<li><strong>利用規約</strong>確認（特にX）</li>
+<li><strong>プライバシー保護</strong>（個人情報除外）</li>
+<br>
+<h3>3. 運用監視</h3>
+<li><strong>ログ記録</strong>（成功/失敗率）</li>
+<li><strong>エラーハンドリング</strong>（API制限・ネットワーク障害）</li>
+<li><strong>データ品質</strong>チェック（重複・ノイズ除去）</li>
+<br>
+<h3>4. コスト効率化</h3>
+<li><strong>無料API枠</strong>最大活用</li>
+<li><strong>バッチ処理</strong>でAPI呼び出し削減</li>
+<li><strong>キャッシュ機能</strong>で重複取得防止</li>
+<br>
+---
+<br>
+<h2>結論</h2>
+<br>
+仮想通貨コミュニティからの自動情報収集は、Reddit API、Discord/Telegram Bot、オープンソースツールの組み合わせで実現可能。Clawdbotとの連携により、リアルタイム監視→AI要約→自動通知の完全自動化フローを構築できる。
+<br>
+初期実装はReddit + Discordから開始し、段階的に拡張することを推奨する。</body></html>

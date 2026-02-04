@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clawdbot運用のHeadless化（GUI不要化）ガイド - KT艦隊</title>
+    <style>
+        :root { --bg: #0d1117; --text: #c9d1d9; --accent: #58a6ff; --gold: #ffd700; }
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); max-width: 900px; margin: 0 auto; padding: 2rem; line-height: 1.8; }
+        h1, h2, h3 { color: var(--gold); }
+        a { color: var(--accent); }
+        pre { background: #161b22; padding: 1rem; border-radius: 8px; overflow-x: auto; }
+        code { background: #161b22; padding: 0.2rem 0.4rem; border-radius: 4px; }
+        blockquote { border-left: 3px solid var(--accent); padding-left: 1rem; color: #8b949e; }
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+        th, td { padding: 0.5rem; border: 1px solid #30363d; }
+        th { background: #161b22; }
+        .back { margin-bottom: 1rem; }
+        .back a { padding: 0.5rem 1rem; background: #21262d; border-radius: 6px; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="back"><a href="/">← トップに戻る</a></div>
+<h1>Clawdbot運用のHeadless化（GUI不要化）ガイド</h1>
+<br>
+<strong>作成日:</strong> 2026-02-03  
+<strong>対象:</strong> Clawdbot艦隊運用  
+<strong>目的:</strong> GUI不要で自動実行可能な作業の実装方法
+<br>
+---
+<br>
+<h2>1. Claude Code/Clawdbotのheadlessモード活用</h2>
+<br>
+<h3>1.1 Claude CLI headlessモード</h3>
+<br>
+<code></code>`bash
+<h1>ストリーミングJSON出力でのheadless実行</h1>
+claude -p "プロンプト内容" --output-format stream-json
+<br>
+<h1>非対話モードでの実行</h1>
+claude --non-interactive -p "調査タスク" > result.json
+<br>
+<h1>ファイル入力での batch実行</h1>
+echo "詳細なプロンプト" | claude --stdin --output-format json
+<code></code>`
+<br>
+<h3>1.2 CI/CD統合例</h3>
+<br>
+#### GitHub Actionsワークフロー
+<code></code>`yaml
+<h1>.github/workflows/daily-research.yml</h1>
+name: Daily Research Task
+on:
+  schedule:
+    - cron: '0 9 * * *'  # 毎日9:00に実行
+  workflow_dispatch:
+<br>
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Claude CLI
+        run: |
+          npm install -g claude-cli
+          echo "${{ secrets.ANTHROPIC_API_KEY }}" > ~/.anthropic
+      
+      - name: Execute Research
+        run: |
+          claude -p "今日の技術ニュースを調査して要約" \
+                 --output-format json > daily-research.json
+      
+      - name: Save Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: research-results
+          path: daily-research.json
+<code></code>`
+<br>
+<h3>1.3 Clawdbot Gateway headless運用</h3>
+<br>
+現在の設定: <code>/Users/user/Library/LaunchAgents/com.clawdbot.gateway.plist</code>
+<code></code>`xml
+<!-- Headless自動起動設定 -->
+<key>RunAtLoad</key><true/>
+<key>KeepAlive</key><true/>
+<br>
+<!-- ログ出力設定 -->
+<key>StandardOutPath</key>
+<string>/Users/user/.clawdbot/logs/gateway.log</string>
+<key>StandardErrorPath</key>
+<string>/Users/user/.clawdbot/logs/gateway.err.log</string>
+<code></code>`
+<br>
+#### headless監視スクリプト
+<code></code>`bash
+#!/bin/bash
+<h1>scripts/clawdbot-health-check.sh</h1>
+<br>
+GATEWAY_PORT=18789
+LOG_FILE="/Users/user/.clawdbot/logs/health.log"
+<br>
+check_gateway() {
+    if curl -s "http://localhost:$GATEWAY_PORT/status" > /dev/null; then
+        echo "$(date): Gateway OK" >> "$LOG_FILE"
+        return 0
+    else
+        echo "$(date): Gateway DOWN - Restarting..." >> "$LOG_FILE"
+        launchctl unload ~/Library/LaunchAgents/com.clawdbot.gateway.plist
+        launchctl load ~/Library/LaunchAgents/com.clawdbot.gateway.plist
+        return 1
+    fi
+}
+<br>
+check_gateway
+<code></code>`
+<br>
+---
+<br>
+<h2>2. ブラウザ自動化のheadless化</h2>
+<br>
+<h3>2.1 Playwright headless設定</h3>
+<br>
+#### 現在の実装（note_auto_post_playwright.js）の改良
+<code></code>`javascript
+// Headless本番環境設定
+const browser = await chromium.launch({
+  headless: process.env.NODE_ENV === 'production',  // 環境に応じて切り替え
+  args: [
+    '--no-sandbox',
+    '--disable-dev-shm-usage',
+    '--disable-blink-features=AutomationControlled',
+    '--disable-features=VizDisplayCompositor'  // メモリ使用量削減
+  ]
+});
+<br>
+// Docker環境での設定
+const browser = await chromium.launch({
+  headless: true,
+  args: [
+    '--no-sandbox',
+    '--disable-setuid-sandbox',
+    '--disable-dev-shm-usage',
+    '--disable-background-timer-throttling',
+    '--disable-backgrounding-occluded-windows',
+    '--disable-renderer-backgrounding'
+  ]
+});
+<code></code>`
+<br>
+#### 完全headless note投稿スクリプト
+<code></code>`javascript
+#!/usr/bin/env node
+// scripts/note-headless-post.js
+<br>
+const { chromium } = require('playwright');
+<br>
+class HeadlessNotePoster {
+  constructor() {
+    this.cookiePath = process.env.COOKIE_PATH || './cookies.json';
+    this.headless = process.env.HEADLESS !== 'false';
+  }
+<br>
+  async launch() {
+    return await chromium.launch({
+      headless: this.headless,
+      args: ['--no-sandbox', '--disable-dev-shm-usage']
+    });
+  }
+<br>
+  async post(article) {
+    const browser = await this.launch();
+    try {
+      const context = await browser.newContext({
+        viewport: { width: 1280, height: 720 },
+        userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+      });
+      
+      // Cookie復元
+      if (fs.existsSync(this.cookiePath)) {
+        const cookies = JSON.parse(fs.readFileSync(this.cookiePath));
+        await context.addCookies(cookies);
+      }
+      
+      const page = await context.newPage();
+      await this.performPost(page, article);
+      
+      // Cookie保存
+      const cookies = await context.cookies();
+      fs.writeFileSync(this.cookiePath, JSON.stringify(cookies, null, 2));
+      
+      return true;
+    } finally {
+      await browser.close();
+    }
+  }
+}
+<br>
+module.exports = HeadlessNotePoster;
+<code></code>`
+<br>
+<h3>2.2 Puppeteer headless実装</h3>
+<br>
+<code></code>`javascript
+// scripts/puppeteer-scraper.js
+const puppeteer = require('puppeteer');
+<br>
+async function scrapeHeadless(url) {
+  const browser = await puppeteer.launch({
+    headless: 'new',  // 新しいheadlessモード
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-gpu',
+      '--window-size=1280,720'
+    ]
+  });
+<br>
+  const page = await browser.newPage();
+  
+  // ヘッドレス検知回避
+  await page.evaluateOnNewDocument(() => {
+    Object.defineProperty(navigator, 'webdriver', {
+      get: () => undefined,
+    });
+  });
+<br>
+  try {
+    await page.goto(url, { waitUntil: 'networkidle2' });
+    const result = await page.evaluate(() => {
+      return document.body.innerText;
+    });
+    return result;
+  } finally {
+    await browser.close();
+  }
+}
+<code></code>`
+<br>
+---
+<br>
+<h2>3. 定期タスクのheadless化</h2>
+<br>
+<h3>3.1 macOS launchd設定</h3>
+<br>
+#### 毎日実行タスクの設定
+<code></code>`xml
+<!-- ~/Library/LaunchAgents/com.clawdbot.daily-tasks.plist -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.clawdbot.daily-tasks</string>
+  
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/env</string>
+    <string>node</string>
+    <string>/Users/user/clawd/scripts/daily-automation.js</string>
+  </array>
+  
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key><integer>9</integer>
+    <key>Minute</key><integer>0</integer>
+  </dict>
+  
+  <key>StandardOutPath</key>
+  <string>/Users/user/clawd/logs/daily-tasks.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/user/clawd/logs/daily-tasks.err.log</string>
+  
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+    <key>NODE_ENV</key><string>production</string>
+  </dict>
+</dict>
+</plist>
+<code></code>`
+<br>
+#### launchd管理コマンド
+<code></code>`bash
+<h1>サービス登録</h1>
+launchctl load ~/Library/LaunchAgents/com.clawdbot.daily-tasks.plist
+<br>
+<h1>サービス開始</h1>
+launchctl start com.clawdbot.daily-tasks
+<br>
+<h1>サービス停止</h1>
+launchctl stop com.clawdbot.daily-tasks
+<br>
+<h1>サービス削除</h1>
+launchctl unload ~/Library/LaunchAgents/com.clawdbot.daily-tasks.plist
+<code></code>`
+<br>
+<h3>3.2 cron設定（バックアップ手法）</h3>
+<br>
+<code></code>`bash
+<h1>crontab設定例</h1>
+<h1>毎日9:00に記事投稿チェック</h1>
+0 9 * * * cd /Users/user/clawd && node scripts/auto-post-check.js >> logs/cron.log 2>&1
+<br>
+<h1>2時間ごとに価格監視</h1>
+0 */2 * * * cd /Users/user/clawd && python3 price_monitor_v5.py --headless >> logs/price-monitor.log 2>&1
+<br>
+<h1>毎週月曜日9:00にレポート生成</h1>
+0 9 * * 1 cd /Users/user/clawd && node scripts/weekly-report.js >> logs/weekly.log 2>&1
+<code></code>`
+<br>
+<h3>3.3 実装スクリプト例</h3>
+<br>
+#### 日次自動化タスク
+<code></code>`javascript
+// scripts/daily-automation.js
+const fs = require('fs');
+const path = require('path');
+const { exec } = require('child_process');
+<br>
+class DailyAutomation {
+  constructor() {
+    this.logPath = '/Users/user/clawd/logs/daily-automation.log';
+    this.tasksConfig = './config/daily-tasks.json';
+  }
+<br>
+  log(message) {
+    const timestamp = new Date().toISOString();
+    const logEntry = `${timestamp}: ${message}\n`;
+    fs.appendFileSync(this.logPath, logEntry);
+    console.log(message);
+  }
+<br>
+  async runTask(taskName, command) {
+    return new Promise((resolve, reject) => {
+      this.log(<code>[${taskName}] 開始: ${command}</code>);
+      
+      exec(command, { cwd: '/Users/user/clawd' }, (error, stdout, stderr) => {
+        if (error) {
+          this.log(<code>[${taskName}] エラー: ${error.message}</code>);
+          reject(error);
+        } else {
+          this.log(<code>[${taskName}] 完了: ${stdout.trim()}</code>);
+          resolve(stdout);
+        }
+      });
+    });
+  }
+<br>
+  async execute() {
+    const tasks = [
+      {
+        name: 'price-check',
+        command: 'python3 price_monitor_v5.py --headless --quiet'
+      },
+      {
+        name: 'article-queue',
+        command: 'node note_auto_post_playwright.js --check-only'
+      },
+      {
+        name: 'memory-update',
+        command: 'node scripts/update-memory.js'
+      }
+    ];
+<br>
+    this.log('=== 日次自動化タスク開始 ===');
+    
+    for (const task of tasks) {
+      try {
+        await this.runTask(task.name, task.command);
+      } catch (error) {
+        this.log(<code>[${task.name}] タスク失敗: ${error.message}</code>);
+      }
+    }
+    
+    this.log('=== 日次自動化タスク完了 ===');
+  }
+}
+<br>
+if (require.main === module) {
+  const automation = new DailyAutomation();
+  automation.execute().catch(console.error);
+}
+<code></code>`
+<br>
+---
+<br>
+<h2>4. 通知のheadless化</h2>
+<br>
+<h3>4.1 Telegram Bot API統合</h3>
+<br>
+#### Bot設定とToken取得
+<code></code>`bash
+<h1>1. @BotFatherでBot作成</h1>
+<h1>2. トークンを環境変数に設定</h1>
+export TELEGRAM_BOT_TOKEN="your_bot_token"
+export TELEGRAM_CHAT_ID="your_chat_id"
+<code></code>`
+<br>
+#### Telegram通知クラス
+<code></code>`javascript
+// lib/telegram-notifier.js
+const https = require('https');
+<br>
+class TelegramNotifier {
+  constructor(token, chatId) {
+    this.token = token;
+    this.chatId = chatId;
+    this.apiUrl = <code>https://api.telegram.org/bot${token}</code>;
+  }
+<br>
+  async sendMessage(text, options = {}) {
+    const payload = {
+      chat_id: this.chatId,
+      text: text,
+      parse_mode: options.parseMode || 'Markdown',
+      disable_web_page_preview: options.disablePreview || true
+    };
+<br>
+    return new Promise((resolve, reject) => {
+      const data = JSON.stringify(payload);
+      const requestOptions = {
+        hostname: 'api.telegram.org',
+        path: <code>/bot${this.token}/sendMessage</code>,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(data)
+        }
+      };
+<br>
+      const req = https.request(requestOptions, (res) => {
+        let body = '';
+        res.on('data', chunk => body += chunk);
+        res.on('end', () => {
+          if (res.statusCode === 200) {
+            resolve(JSON.parse(body));
+          } else {
+            reject(new Error(<code>HTTP ${res.statusCode}: ${body}</code>));
+          }
+        });
+      });
+<br>
+      req.on('error', reject);
+      req.write(data);
+      req.end();
+    });
+  }
+<br>
+  async sendDocument(filePath, caption = '') {
+    // ファイル送信の実装
+    const FormData = require('form-data');
+    const form = new FormData();
+    form.append('chat_id', this.chatId);
+    form.append('document', fs.createReadStream(filePath));
+    if (caption) form.append('caption', caption);
+    
+    // 実装詳細...
+  }
+<br>
+  // 緊急通知（音付き）
+  async sendAlert(text) {
+    return this.sendMessage(`🚨 *ALERT*\n\n${text}`, {
+      parseMode: 'Markdown',
+      disableNotification: false  // 通知音ON
+    });
+  }
+<br>
+  // 定期レポート（音無し）
+  async sendReport(text) {
+    return this.sendMessage(`📊 *Report*\n\n${text}`, {
+      parseMode: 'Markdown',
+      disableNotification: true  // 通知音OFF
+    });
+  }
+}
+<br>
+module.exports = TelegramNotifier;
+<code></code>`
+<br>
+<h3>4.2 Webhook通知システム</h3>
+<br>
+#### Generic Webhook Notifier
+<code></code>`javascript
+// lib/webhook-notifier.js
+const https = require('https');
+const crypto = require('crypto');
+<br>
+class WebhookNotifier {
+  constructor(config) {
+    this.webhooks = config.webhooks || [];
+    this.secret = config.secret;
+  }
+<br>
+  generateSignature(payload, secret) {
+    return crypto
+      .createHmac('sha256', secret)
+      .update(payload)
+      .digest('hex');
+  }
+<br>
+  async notify(event, data) {
+    const payload = JSON.stringify({
+      timestamp: new Date().toISOString(),
+      event: event,
+      data: data,
+      source: 'clawdbot-headless'
+    });
+<br>
+    const promises = this.webhooks.map(webhook => 
+      this.sendWebhook(webhook, payload)
+    );
+<br>
+    return Promise.allSettled(promises);
+  }
+<br>
+  async sendWebhook(webhookUrl, payload) {
+    const url = new URL(webhookUrl);
+    const headers = {
+      'Content-Type': 'application/json',
+      'User-Agent': 'Clawdbot-Webhook/1.0'
+    };
+<br>
+    if (this.secret) {
+      headers['X-Hub-Signature-256'] = 'sha256=' + this.generateSignature(payload, this.secret);
+    }
+<br>
+    return new Promise((resolve, reject) => {
+      const req = https.request({
+        hostname: url.hostname,
+        port: url.port,
+        path: url.pathname + url.search,
+        method: 'POST',
+        headers: headers
+      }, (res) => {
+        resolve({ status: res.statusCode, webhook: webhookUrl });
+      });
+<br>
+      req.on('error', reject);
+      req.write(payload);
+      req.end();
+    });
+  }
+}
+<br>
+module.exports = WebhookNotifier;
+<code></code>`
+<br>
+---
+<br>
+<h2>5. 認証のheadless化</h2>
+<br>
+<h3>5.1 OAuth Device Flow実装</h3>
+<br>
+<code></code>`javascript
+// lib/oauth-device-flow.js
+const https = require('https');
+const fs = require('fs');
+<br>
+class OAuthDeviceFlow {
+  constructor(clientId, clientSecret, authUrl, tokenUrl) {
+    this.clientId = clientId;
+    this.clientSecret = clientSecret;
+    this.authUrl = authUrl;
+    this.tokenUrl = tokenUrl;
+    this.tokenPath = './tokens.json';
+  }
+<br>
+  // Step 1: デバイス認証コード取得
+  async requestDeviceCode() {
+    const params = new URLSearchParams({
+      client_id: this.clientId,
+      scope: 'read write'
+    });
+<br>
+    const response = await this.makeRequest(this.authUrl + '/device', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params.toString()
+    });
+<br>
+    return response;
+  }
+<br>
+  // Step 2: ポーリングでトークン取得
+  async pollForToken(deviceCode, interval = 5) {
+    console.log('ユーザー認証完了まで待機中...');
+    
+    while (true) {
+      await new Promise(resolve => setTimeout(resolve, interval * 1000));
+      
+      try {
+        const token = await this.requestToken(deviceCode);
+        this.saveTokens(token);
+        console.log('認証完了！トークンを保存しました。');
+        return token;
+      } catch (error) {
+        if (error.message.includes('authorization_pending')) {
+          continue; // まだ認証されていない
+        } else {
+          throw error;
+        }
+      }
+    }
+  }
+<br>
+  async requestToken(deviceCode) {
+    const params = new URLSearchParams({
+      grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
+      device_code: deviceCode,
+      client_id: this.clientId,
+      client_secret: this.clientSecret
+    });
+<br>
+    return this.makeRequest(this.tokenUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params.toString()
+    });
+  }
+<br>
+  // トークンリフレッシュ
+  async refreshToken() {
+    const tokens = this.loadTokens();
+    if (!tokens.refresh_token) {
+      throw new Error('リフレッシュトークンがありません');
+    }
+<br>
+    const params = new URLSearchParams({
+      grant_type: 'refresh_token',
+      refresh_token: tokens.refresh_token,
+      client_id: this.clientId,
+      client_secret: this.clientSecret
+    });
+<br>
+    const newTokens = await this.makeRequest(this.tokenUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params.toString()
+    });
+<br>
+    this.saveTokens(newTokens);
+    return newTokens;
+  }
+<br>
+  saveTokens(tokens) {
+    fs.writeFileSync(this.tokenPath, JSON.stringify(tokens, null, 2));
+  }
+<br>
+  loadTokens() {
+    if (fs.existsSync(this.tokenPath)) {
+      return JSON.parse(fs.readFileSync(this.tokenPath));
+    }
+    return null;
+  }
+<br>
+  async makeRequest(url, options) {
+    // HTTPS request実装...
+  }
+}
+<code></code>`
+<br>
+<h3>5.2 APIトークン管理</h3>
+<br>
+<code></code>`javascript
+// lib/token-manager.js
+const fs = require('fs');
+const crypto = require('crypto');
+<br>
+class TokenManager {
+  constructor(configPath = './config/tokens.encrypted') {
+    this.configPath = configPath;
+    this.encryptionKey = process.env.TOKEN_ENCRYPTION_KEY || this.generateKey();
+  }
+<br>
+  generateKey() {
+    return crypto.randomBytes(32).toString('hex');
+  }
+<br>
+  encrypt(text) {
+    const cipher = crypto.createCipher('aes-256-cbc', this.encryptionKey);
+    let encrypted = cipher.update(text, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    return encrypted;
+  }
+<br>
+  decrypt(encryptedText) {
+    const decipher = crypto.createDecipher('aes-256-cbc', this.encryptionKey);
+    let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
+  }
+<br>
+  saveToken(serviceName, token) {
+    let tokens = {};
+    if (fs.existsSync(this.configPath)) {
+      tokens = JSON.parse(this.decrypt(fs.readFileSync(this.configPath, 'utf8')));
+    }
+    
+    tokens[serviceName] = {
+      token: token,
+      createdAt: new Date().toISOString(),
+      expiresAt: token.expires_at || null
+    };
+<br>
+    const encrypted = this.encrypt(JSON.stringify(tokens, null, 2));
+    fs.writeFileSync(this.configPath, encrypted);
+  }
+<br>
+  getToken(serviceName) {
+    if (!fs.existsSync(this.configPath)) {
+      return null;
+    }
+<br>
+    const tokens = JSON.parse(this.decrypt(fs.readFileSync(this.configPath, 'utf8')));
+    return tokens[serviceName] || null;
+  }
+<br>
+  isTokenValid(serviceName) {
+    const tokenData = this.getToken(serviceName);
+    if (!tokenData) return false;
+    
+    if (tokenData.expiresAt) {
+      return new Date() < new Date(tokenData.expiresAt);
+    }
+    
+    return true; // 期限なしトークン
+  }
+}
+<br>
+module.exports = TokenManager;
+<code></code>`
+<br>
+---
+<br>
+<h2>6. 現在の艦隊運用でheadless化できる作業</h2>
+<br>
+<h3>6.1 即座にheadless化可能な作業</h3>
+<br>
+#### A. 価格監視システム
+<strong>現在:</strong> <code>price_monitor_v5.py</code>  
+<strong>headless化方法:</strong>
+<code></code>`bash
+<h1>cron設定</h1>
+0 */2 * * * cd /Users/user/clawd && python3 price_monitor_v5.py --headless --notify-telegram
+<code></code>`
+<br>
+#### B. note.com自動投稿
+<strong>現在:</strong> <code>note_auto_post_playwright.js</code>  
+<strong>必要な変更:</strong>
+<code></code>`javascript
+// headless: false → headless: true
+const browser = await chromium.launch({
+  headless: process.env.NODE_ENV === 'production',
+  args: ['--no-sandbox', '--disable-dev-shm-usage']
+});
+<code></code>`
+<br>
+#### C. ジモティー監視
+<strong>現在:</strong> <code>jmty_filter.py</code>  
+<strong>実装スクリプト:</strong>
+<code></code>`bash
+#!/bin/bash
+<h1>scripts/jmty-headless.sh</h1>
+cd /Users/user/clawd
+python3 jmty_filter.py --headless 2>&1 | tee logs/jmty-$(date +%Y%m%d).log
+<br>
+<h1>Telegram通知</h1>
+if [ $? -eq 0 ]; then
+  node scripts/telegram-notify.js "ジモティー監視完了: $(date)"
+else
+  node scripts/telegram-notify.js "⚠️ ジモティー監視エラー: $(date)"
+fi
+<code></code>`
+<br>
+<h3>6.2 中期的にheadless化する作業</h3>
+<br>
+#### A. メモリ更新タスク
+<strong>実装例:</strong>
+<code></code>`javascript
+// scripts/memory-automation.js
+const fs = require('fs');
+const path = require('path');
+<br>
+class MemoryAutomation {
+  constructor() {
+    this.memoryDir = '/Users/user/clawd/memory';
+    this.mainMemoryFile = '/Users/user/clawd/MEMORY.md';
+  }
+<br>
+  async consolidateDailyMemories() {
+    const today = new Date();
+    const threeDaysAgo = new Date(today);
+    threeDaysAgo.setDate(today.getDate() - 3);
+<br>
+    const dailyFiles = fs.readdirSync(this.memoryDir)
+      .filter(file => file.match(/^\d{4}-\d{2}-\d{2}\.md$/))
+      .filter(file => {
+        const fileDate = new Date(file.split('.')[0]);
+        return fileDate < threeDaysAgo;
+      });
+<br>
+    // 重要な情報を抽出してMEMORY.mdに統合
+    for (const file of dailyFiles) {
+      await this.processDaily(path.join(this.memoryDir, file));
+    }
+  }
+<br>
+  async processDaily(filePath) {
+    const content = fs.readFileSync(filePath, 'utf-8');
+    const importantSections = this.extractImportant(content);
+    
+    if (importantSections.length > 0) {
+      this.appendToMainMemory(importantSections, path.basename(filePath));
+    }
+  }
+}
+<code></code>`
+<br>
+#### B. レポート自動生成
+<code></code>`javascript
+// scripts/daily-report.js
+const TelegramNotifier = require('../lib/telegram-notifier');
+<br>
+async function generateDailyReport() {
+  const report = {
+    date: new Date().toISOString().split('T')[0],
+    tasks: await getCompletedTasks(),
+    metrics: await getMetrics(),
+    alerts: await getAlerts()
+  };
+<br>
+  const message = formatReport(report);
+  
+  const telegram = new TelegramNotifier(
+    process.env.TELEGRAM_BOT_TOKEN,
+    process.env.TELEGRAM_CHAT_ID
+  );
+  
+  await telegram.sendReport(message);
+}
+<code></code>`
+<br>
+<h3>6.3 headless化実装の優先順位</h3>
+<br>
+#### 最優先（即座に実装）
+1. <strong>価格監視のcron化</strong> - 2時間ごとの自動実行
+2. <strong>note投稿のheadless化</strong> - GUI不要での記事投稿
+3. <strong>Clawdbot Gateway監視</strong> - 自動再起動機能
+<br>
+#### 高優先（1週間以内）
+1. <strong>Telegram通知統合</strong> - 全タスクの結果通知
+2. <strong>エラーハンドリング強化</strong> - 失敗時の自動復旧
+3. <strong>ログ管理システム</strong> - 統一されたログ出力
+<br>
+#### 中優先（1ヶ月以内）
+1. <strong>OAuth認証の自動化</strong> - API接続の自動認証
+2. <strong>リソース監視</strong> - CPU/メモリ使用量の監視
+3. <strong>バックアップ自動化</strong> - 重要データの定期バックアップ
+<br>
+---
+<br>
+<h2>7. 実装チェックリスト</h2>
+<br>
+<h3>7.1 環境設定</h3>
+<li>[ ] Node.js環境（v25.4.0）確認済み</li>
+<li>[ ] Playwright依存関係インストール済み</li>
+<li>[ ] Python3環境確認済み</li>
+<li>[ ] launchd設定権限確認済み</li>
+<br>
+<h3>7.2 セキュリティ</h3>
+<li>[ ] APIトークンの暗号化保存</li>
+<li>[ ] Cookie情報の安全な管理</li>
+<li>[ ] ログファイルの権限設定</li>
+<li>[ ] 認証情報の環境変数化</li>
+<br>
+<h3>7.3 監視・アラート</h3>
+<li>[ ] Telegram Bot設定完了</li>
+<li>[ ] エラー通知システム構築</li>
+<li>[ ] ヘルスチェック機能実装</li>
+<li>[ ] ログローテーション設定</li>
+<br>
+<h3>7.4 テスト・デプロイ</h3>
+<li>[ ] headlessモードでの動作確認</li>
+<li>[ ] cron/launchdでの実行テスト</li>
+<li>[ ] 失敗ケースのテスト</li>
+<li>[ ] ロールバック手順の確立</li>
+<br>
+---
+<br>
+<h2>8. トラブルシューティング</h2>
+<br>
+<h3>8.1 よくある問題</h3>
+<br>
+#### Playwright headlessで認証失敗
+<code></code>`javascript
+// 解決策：User-Agentとviewportの設定
+await context.newContext({
+  viewport: { width: 1280, height: 720 },
+  userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+});
+<code></code>`
+<br>
+#### launchd起動失敗
+<code></code>`bash
+<h1>デバッグ方法</h1>
+launchctl list | grep clawdbot
+tail -f /Users/user/.clawdbot/logs/gateway.err.log
+<br>
+<h1>権限確認</h1>
+ls -la ~/Library/LaunchAgents/com.clawdbot.*.plist
+<code></code>`
+<br>
+#### メモリ不足
+<code></code>`bash
+<h1>Node.jsメモリ制限設定</h1>
+export NODE_OPTIONS="--max-old-space-size=2048"
+<code></code>`
+<br>
+<h3>8.2 緊急時対応</h3>
+<br>
+<code></code>`bash
+<h1>全サービス停止</h1>
+launchctl stop com.clawdbot.gateway
+launchctl stop com.clawdbot.daily-tasks
+<br>
+<h1>手動実行でテスト</h1>
+cd /Users/user/clawd
+NODE_ENV=development node scripts/test-headless.js
+<br>
+<h1>ログ確認</h1>
+tail -f logs/*.log
+<code></code>`
+<br>
+---
+<br>
+<h2>9. パフォーマンス最適化</h2>
+<br>
+<h3>9.1 リソース使用量削減</h3>
+<li>Playwright: <code>--disable-dev-shm-usage</code></li>
+<li>メモリ制限: <code>--max-old-space-size</code></li>
+<li>同時実行制限: queue管理</li>
+<br>
+<h3>9.2 実行時間短縮</h3>
+<li>Cookie再利用によるログインスキップ</li>
+<li>必要最小限のページ読み込み</li>
+<li>並列処理の活用</li>
+<br>
+---
+<br>
+<strong>作成者:</strong> AI Assistant  
+<strong>バージョン:</strong> 1.0  
+<strong>最終更新:</strong> 2026-02-03 04:30</body></html>

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project OpenClaw 設計書 - KT艦隊</title>
+    <style>
+        :root { --bg: #0d1117; --text: #c9d1d9; --accent: #58a6ff; --gold: #ffd700; }
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); max-width: 900px; margin: 0 auto; padding: 2rem; line-height: 1.8; }
+        h1, h2, h3 { color: var(--gold); }
+        a { color: var(--accent); }
+        pre { background: #161b22; padding: 1rem; border-radius: 8px; overflow-x: auto; }
+        code { background: #161b22; padding: 0.2rem 0.4rem; border-radius: 4px; }
+        blockquote { border-left: 3px solid var(--accent); padding-left: 1rem; color: #8b949e; }
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+        th, td { padding: 0.5rem; border: 1px solid #30363d; }
+        th { background: #161b22; }
+        .back { margin-bottom: 1rem; }
+        .back a { padding: 0.5rem 1rem; background: #21262d; border-radius: 6px; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="back"><a href="/">← トップに戻る</a></div>
+<h1>Project OpenClaw 設計書</h1>
+<strong>日付</strong>: 2026-02-04
+<strong>作成</strong>: 1号 レディ
+<strong>承認</strong>: KT（艦長）
+<br>
+---
+<br>
+<h2>🎯 ミッション・ステートメント</h2>
+<br>
+> 「俺はこのメインストリームの文明から独立する」
+> — KT, 2026-02-04
+<br>
+---
+<br>
+<h2>🏗️ アーキテクチャ概要</h2>
+<br>
+<code></code>`
+┌─────────────────────────────────────────────────────┐
+│                  KT（艦長）                          │
+│            リアルタイム・スタートレック              │
+└─────────────────────┬───────────────────────────────┘
+                      │
+        ┌─────────────┼─────────────┐
+        ▼             ▼             ▼
+┌───────────┐  ┌───────────┐  ┌───────────┐
+│ 1号 レディ │  │ 2号 データ │  │ 3号 ラフォージ│
+│  (Opus)   │  │ (Gemini)  │  │ (Mac mini)│
+│ 判断・設計 │  │  交通整理  │  │  サーバー  │
+└───────────┘  └───────────┘  └─────┬─────┘
+                                    │
+                      ┌─────────────┼─────────────┐
+                      ▼             ▼             ▼
+                ┌──────────┐ ┌──────────┐ ┌──────────┐
+                │音声録音   │ │NAS/Web   │ │Qdrant    │
+                │サーバー   │ │サーバー   │ │ベクトルDB │
+                └──────────┘ └──────────┘ └──────────┘
+                      │
+        ┌─────────────┴─────────────┐
+        ▼                           ▼
+┌───────────────┐          ┌───────────────┐
+│ 4号 スポック   │          │ T1ストレージ   │
+│ (ローカルLLM) │          │ (音声ログ保存) │
+│ 重い分析・収益 │          │ 200-300GB     │
+└───────────────┘          └───────────────┘
+<code></code>`
+<br>
+---
+<br>
+<h2>📋 今日の決定事項</h2>
+<br>
+<h3>1. 艦隊哲学（FLEET_PHILOSOPHY.md）</h3>
+<li>「内容より構造を見ろ」</li>
+<li>「正しさより理解を示せ」</li>
+<li>Grokの敗因から学ぶ</li>
+<br>
+<h3>2. 役割分担</h3>
+| 艦 | 役割 | エンジン |
+|----|------|----------|
+| 1号 レディ | 即レス・判断・設計・対話 | Opus（クラウド） |
+| 2号 データ少佐 | 交通整理・進捗監視 | Gemini |
+| 3号 ラフォージ | サーバー（音声/NAS/Web/DB） | GLM + Qwen |
+| 4号 スポック | 重い分析・マイニング・収益 | Qwen 72B / Dolphin 70B |
+<br>
+<h3>3. ローカルLLM導入</h3>
+<li>✅ Qwen 2.5 72B（完了）</li>
+<li>⏳ Dolphin 70B（ダウンロード中 ~52分）</li>
+<li>メインエンジン作業は4号に委譲</li>
+<br>
+<h3>4. KT哲学マイニング</h3>
+<li>Open Notebook + Qwen で K_Vault から哲学を発掘</li>
+<li>ビジュアライゼーション・音声化まで対応</li>
+<li>4号スポックに命令書送付済み</li>
+<br>
+<h3>5. 自動収益システム</h3>
+<li>仮想通貨自動売買</li>
+<li>GPU貸し出し（Vast.ai, RunPod）</li>
+<li>API収益化</li>
+<li>4号でリサーチ予定</li>
+<br>
+<h3>6. 3号サーバー化</h3>
+<li>音声録音サーバー</li>
+<li>NAS（T1ストレージ：200-300GB）</li>
+<li>Webサーバー（艦長日誌公開）</li>
+<li>DBサーバー（Qdrant）</li>
+<br>
+<h3>7. 音声ログシステム</h3>
+<code></code>`
+/Volumes/T1/AudioLogs/
+├── YYYYMMDD_NNN_HHMM_HHMM.opus  # 音声
+├── YYYYMMDD_NNN_HHMM_HHMM.json  # メタデータ
+├── YYYYMMDD_NNN_HHMM_HHMM.txt   # 文字起こし
+└── index.json                   # マスターインデックス
+<code></code>`
+<li>Opus 32kbps（年間130GB）</li>
+<li>Whisperで即時文字起こし</li>
+<br>
+<h3>8. ライフログ構想</h3>
+<li>音声: 常時録音</li>
+<li>映像: カメラ常時録画（将来）</li>
+<li>3D: ステレオカメラ立体化（将来）</li>
+<li>全人類に公開</li>
+<br>
+<h3>9. Google連携</h3>
+<li>Gemini CLI + 拡張機能</li>
+<li>Google Drive / Photos / Docs アクセス</li>
+<li>4号で認証設定予定</li>
+<br>
+---
+<br>
+<h2>🗺️ Dream Map ノード一覧</h2>
+<br>
+| ID | 名前 | 状態 | 備考 |
+|----|------|------|------|
+| kt | KT（艦長） | ✅ | 中核 |
+| mac | 64GB Mac | ✅ | ハードウェア |
+| ollama | Ollama | ✅ | 推論エンジン |
+| qwen | Qwen 72B | ✅ | 完了 |
+| dolphin | Dolphin 70B | ⏳ | DL中 |
+| lady | 1号 レディ | ✅ | |
+| data | 2号 データ | ✅ | |
+| laforge | 3号 ラフォージ | ✅ | |
+| spock | 4号 スポック | ✅ | |
+| kvault | K_Vault | ✅ | データ資産 |
+| qdrant | Qdrant | ❌ | 要導入 |
+| obsidian | Obsidian | ⏳ | 検討中 |
+| n8n | n8n | ❌ | 要導入 |
+| opennotebook | Open Notebook | ⏳ | API問題あり |
+| trading | 自動売買 | ❌ | リサーチ後 |
+| api | API収益化 | ❌ | リサーチ後 |
+| killswitch | キルスイッチ | ⏳ | 部分実装 |
+| audioserver | 音声サーバー | ❌ | 3号に構築 |
+| lifelog | ライフログ | ❌ | 構想段階 |
+| independence | 独立 | ❌ | 最終ゴール |
+<br>
+---
+<br>
+<h2>📎 関連ファイル</h2>
+<br>
+<li><code>FLEET_PHILOSOPHY.md</code> - 艦隊哲学</li>
+<li><code>FLEET_PROTOCOL.md</code> - 通信プロトコル</li>
+<li><code>K_Vault/艦長メモ/館長から乗組員各員へ_2026-02-04.md</code> - 艦長メモ</li>
+<li><code>projects/openclaw/dream-map.html</code> - Dream Map可視化</li>
+<br>
+---
+<br>
+<h2>🚀 次のアクション</h2>
+<br>
+1. [ ] Dolphin 70B ダウンロード完了待ち
+2. [ ] 3号を音声サーバーとして設定
+3. [ ] 4号で自動収益リサーチ開始
+4. [ ] Qdrant + n8n 導入検討
+5. [ ] Dream Map を進捗に応じて更新
+<br>
+---
+<br>
+*"To boldly go where no one has gone before."*
+<br>
+*記録: 2026-02-04 06:36 JST*
+</body></html>
