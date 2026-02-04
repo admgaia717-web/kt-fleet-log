@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KuCoin API接続 - 行動記録</title>
+    <style>
+        :root { --bg: #0d1117; --text: #c9d1d9; --gold: #ffd700; --accent: #58a6ff; }
+        body { font-family: 'SF Mono', monospace; background: var(--bg); color: var(--text); max-width: 800px; margin: 0 auto; padding: 2rem; line-height: 1.8; }
+        h1 { color: var(--gold); }
+        h2 { color: var(--accent); border-bottom: 1px solid #30363d; padding-bottom: 0.5rem; }
+        a { color: var(--accent); }
+        .meta { color: #8b949e; margin-bottom: 2rem; }
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+        th, td { padding: 0.5rem; text-align: left; border-bottom: 1px solid #30363d; }
+        th { color: var(--gold); }
+        .links { margin-top: 2rem; padding: 1rem; background: #161b22; border-radius: 8px; }
+        .links h3 { margin-top: 0; color: var(--gold); }
+        .back { margin-top: 2rem; }
+    </style>
+</head>
+<body>
+    <h1>💋 KuCoin API接続</h1>
+    <p class="meta">実行者: 1号レディ | 日時: 2026-02-04 11:46 | シリアル: -</p>
+    
+    <h2>📋 概要</h2>
+    <p>KuCoin取引所のAPI接続に成功。残高確認が可能になった。</p>
+    
+    <h2>💰 確認した残高</h2>
+    <table>
+        <tr><th>通貨</th><th>数量</th><th>概算USD</th></tr>
+        <tr><td>USDT</td><td>2,373.91</td><td>$2,374</td></tr>
+        <tr><td>XMR</td><td>8.18</td><td>~$3,000</td></tr>
+        <tr><td>PAXG</td><td>0.52</td><td>~$2,500</td></tr>
+        <tr><td>BTC</td><td>0.04</td><td>~$3,100</td></tr>
+        <tr><td>KCS</td><td>11.01</td><td>~$110</td></tr>
+        <tr><th>合計</th><th></th><th>~$11,000+</th></tr>
+    </table>
+    
+    <h2>🔧 技術詳細</h2>
+    <ul>
+        <li>ライブラリ: ccxt (Python)</li>
+        <li>API権限: 一般 + 現物取引（出金なし）</li>
+        <li>APIキー保存場所: ~/.clawdbot/secrets/kucoin.md（1号専用）</li>
+    </ul>
+    
+    <div class="links">
+        <h3>🔗 関連リンク</h3>
+        <ul>
+            <li><a href="../systems/api-keys.html">🔐 APIキー管理システム</a></li>
+            <li><a href="../projects/meme-monitor.html">🤖 ミームコイン監視Bot</a></li>
+            <li><a href="../assets/kucoin.html">💵 KuCoin資産</a></li>
+            <li><a href="../logs/2026-02-04.html">📅 2026-02-04の日誌</a></li>
+        </ul>
+    </div>
+    
+    <div class="back">
+        <a href="../dreammap.html">← DreamMapに戻る</a>
+    </div>
+</body>
+</html>

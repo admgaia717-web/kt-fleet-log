@@ -39,48 +39,69 @@
         .legend span { padding: 0.2rem 0.5rem; border-radius: 4px; }
         .back { text-align: center; padding: 0.5rem; }
         .back a { color: #58a6ff; text-decoration: none; }
+        .hint { text-align: center; color: #8b949e; font-size: 0.8rem; }
     </style>
 </head>
 <body>
     <h1>🗺️ DreamMap - 艦隊行動マップ</h1>
+    <p class="hint">💡 ノードをクリックで詳細ページへ移動</p>
     <div class="legend">
         <span style="background:#ffd70033;color:#ffd700;">📍 目標</span>
         <span style="background:#ff6b9d33;color:#ff6b9d;">💋 1号レディ</span>
         <span style="background:#3fb95033;color:#3fb950;">🖖 4号スポック</span>
-        <span style="background:#f0883e33;color:#f0883e;">⚙️ 3号ラフォージ</span>
         <span style="background:#58a6ff33;color:#58a6ff;">📊 システム</span>
     </div>
     <div id="network"></div>
     <div class="back"><a href="index.html">← メインページに戻る</a></div>
 
     <script>
-        // ノード定義（行動の点）
+        // ノード定義（行動の点）- URLリンク付き
         var nodes = new vis.DataSet([
             // 中心目標
-            {id: 0, label: '💰 お金の最大化', color: '#ffd700', font: {color: '#fff'}, size: 40},
+            {id: 0, label: '💰 お金の最大化', color: '#ffd700', font: {color: '#fff'}, size: 40, 
+             url: 'goals/money.html'},
             
-            // 2026-02-04の行動
-            {id: 100, label: '2026-02-04', color: '#8b949e', font: {color: '#fff'}, size: 30},
+            // 日付ノード
+            {id: 100, label: '📅 2026-02-04', color: '#8b949e', font: {color: '#fff'}, size: 30,
+             url: 'logs/2026-02-04.html'},
             
             // システム構築
-            {id: 1, label: '📋 分散管理台帳\n作成', color: '#58a6ff', font: {color: '#fff'}},
-            {id: 2, label: '🌐 Cloudflare\nPages公開', color: '#58a6ff', font: {color: '#fff'}},
-            {id: 3, label: '🗺️ DreamMap\n可視化', color: '#58a6ff', font: {color: '#fff'}},
-            {id: 4, label: '📜 艦長日誌\nルール制定', color: '#58a6ff', font: {color: '#fff'}},
-            {id: 5, label: '🔢 シリアル管理\n導入', color: '#58a6ff', font: {color: '#fff'}},
+            {id: 1, label: '📋 分散管理台帳', color: '#58a6ff', font: {color: '#fff'},
+             url: 'board.html'},
+            {id: 2, label: '🌐 Cloudflare Pages', color: '#58a6ff', font: {color: '#fff'},
+             url: 'systems/cloudflare.html'},
+            {id: 3, label: '🗺️ DreamMap', color: '#58a6ff', font: {color: '#fff'},
+             url: 'dreammap.html'},
+            {id: 4, label: '📜 艦長日誌ルール', color: '#58a6ff', font: {color: '#fff'},
+             url: 'systems/captain-log.html'},
+            {id: 5, label: '🔢 シリアル管理', color: '#58a6ff', font: {color: '#fff'},
+             url: 'systems/serial.html'},
             
             // 1号レディの行動
-            {id: 10, label: '💋 KuCoin API\n接続成功', color: '#ff6b9d', font: {color: '#fff'}},
-            {id: 11, label: '💋 APIキー管理\nシステム構築', color: '#ff6b9d', font: {color: '#fff'}},
-            {id: 12, label: '💋 ミームコイン\n監視Bot完成', color: '#ff6b9d', font: {color: '#fff'}},
-            {id: 13, label: '💋 「思い出せ」\nコマンド設定', color: '#ff6b9d', font: {color: '#fff'}},
+            {id: 10, label: '💋 KuCoin API接続', color: '#ff6b9d', font: {color: '#fff'},
+             url: 'actions/kucoin-api.html'},
+            {id: 11, label: '💋 APIキー管理', color: '#ff6b9d', font: {color: '#fff'},
+             url: 'systems/api-keys.html'},
+            {id: 12, label: '💋 ミームコイン監視Bot', color: '#ff6b9d', font: {color: '#fff'},
+             url: 'projects/meme-monitor.html'},
+            {id: 13, label: '💋 思い出せコマンド', color: '#ff6b9d', font: {color: '#fff'},
+             url: 'systems/remember.html'},
             
             // 4号スポックの行動
-            {id: 20, label: '🖖 Opus化\n完了', color: '#3fb950', font: {color: '#fff'}},
-            {id: 21, label: '🖖 dolphin-mixtral\nDL中', color: '#3fb950', font: {color: '#fff'}},
+            {id: 20, label: '🖖 Opus化完了', color: '#3fb950', font: {color: '#fff'},
+             url: 'actions/spock-opus.html'},
+            {id: 21, label: '🖖 Ollama設定', color: '#3fb950', font: {color: '#fff'},
+             url: 'systems/ollama.html'},
             
             // 資産
-            {id: 30, label: '💵 KuCoin残高\n$11,000+', color: '#ffd700', font: {color: '#fff'}},
+            {id: 30, label: '💵 KuCoin $11,000+', color: '#ffd700', font: {color: '#fff'},
+             url: 'assets/kucoin.html'},
+             
+            // プロジェクト
+            {id: 40, label: '🐍 OpenClaw', color: '#a371f7', font: {color: '#fff'},
+             url: 'projects/openclaw.html'},
+            {id: 41, label: '🎰 賭博場', color: '#a371f7', font: {color: '#fff'},
+             url: 'projects/casino.html'},
         ]);
 
         // エッジ定義（線のつながり）
@@ -108,6 +129,11 @@
             // 目標への接続
             {from: 30, to: 0, label: '増やす'},
             {from: 12, to: 0, label: '収益化'},
+            {from: 40, to: 0},
+            {from: 41, to: 0},
+            
+            // プロジェクト間
+            {from: 12, to: 40},
         ]);
 
         // ネットワーク描画
@@ -138,6 +164,25 @@
             }
         };
         var network = new vis.Network(container, data, options);
+        
+        // ノードクリックでリンク先へ移動
+        network.on('click', function(params) {
+            if (params.nodes.length > 0) {
+                var nodeId = params.nodes[0];
+                var node = nodes.get(nodeId);
+                if (node.url) {
+                    window.location.href = node.url;
+                }
+            }
+        });
+        
+        // ホバー時にカーソル変更
+        network.on('hoverNode', function() {
+            container.style.cursor = 'pointer';
+        });
+        network.on('blurNode', function() {
+            container.style.cursor = 'default';
+        });
     </script>
 </body>
 </html>
