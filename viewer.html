@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KT艦隊 日誌ビューア</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --text: #c9d1d9;
+            --accent: #58a6ff;
+            --gold: #ffd700;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+            line-height: 1.8;
+        }
+        h1, h2, h3 { color: var(--gold); }
+        a { color: var(--accent); }
+        pre { background: #161b22; padding: 1rem; border-radius: 8px; overflow-x: auto; }
+        code { background: #161b22; padding: 0.2rem 0.4rem; border-radius: 4px; }
+        blockquote { border-left: 3px solid var(--accent); padding-left: 1rem; color: #8b949e; }
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+        th, td { padding: 0.5rem; border: 1px solid #30363d; }
+        th { background: #161b22; }
+        .back { margin-bottom: 1rem; }
+        .back a { padding: 0.5rem 1rem; background: #21262d; border-radius: 6px; text-decoration: none; }
+        .back a:hover { background: #30363d; }
+        #content { margin-top: 2rem; }
+        .loading { text-align: center; color: var(--accent); }
+    </style>
+</head>
+<body>
+    <div class="back">
+        <a href="/">← トップに戻る</a>
+    </div>
+    <div id="content">
+        <p class="loading">📜 読み込み中...</p>
+    </div>
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const file = params.get('file');
+        
+        if (file) {
+            fetch(file)
+                .then(res => {
+                    if (!res.ok) throw new Error('File not found');
+                    return res.text();
+                })
+                .then(md => {
+                    document.getElementById('content').innerHTML = marked.parse(md);
+                    // タイトル更新
+                    const h1 = document.querySelector('#content h1');
+                    if (h1) document.title = h1.textContent + ' - KT艦隊';
+                })
+                .catch(err => {
+                    document.getElementById('content').innerHTML = 
+                        '<h1>⚠️ エラー</h1><p>ファイルが見つかりません: ' + file + '</p>';
+                });
+        } else {
+            document.getElementById('content').innerHTML = 
+                '<h1>⚠️ エラー</h1><p>ファイルが指定されていません</p>';
+        }
+    </script>
+</body>
+</html>
