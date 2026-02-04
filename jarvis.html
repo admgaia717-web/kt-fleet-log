@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Jarvis Chat</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:sans-serif;background:#f5f0e8;min-height:100vh;padding:15px}
+h1{color:#ff6b35;margin-bottom:15px;font-size:1.5em}
+#chat{background:#ebe3d5;border:3px solid #ff6b35;border-radius:10px;padding:15px;height:60vh;overflow-y:auto;margin-bottom:15px}
+.u{color:#8b4513;margin-bottom:10px}
+.b{color:#3d3d3d;margin-bottom:10px;white-space:pre-wrap}
+select,input,button{padding:12px;font-size:16px;border-radius:8px;border:2px solid #ff6b35;margin-bottom:10px}
+select{width:100%;background:#fff}
+input{width:70%;background:#fff}
+button{background:#ff6b35;color:#fff;border:none;width:28%;cursor:pointer}
+</style>
+</head>
+<body>
+<h1>🐬 Jarvis</h1>
+<select id="m">
+<option value="llama3:8b">llama3:8b (速い)</option>
+<option value="dolphin-mixtral:8x7b">dolphin (検閲なし)</option>
+<option value="qwen2.5:72b">qwen2.5:72b (賢い)</option>
+</select>
+<div id="chat"></div>
+<input id="i" placeholder="メッセージ">
+<button onclick="send()">送信</button>
+<script>
+var API = "https://aud-respondent-dis-removing.trycloudflare.com";
+var chat = document.getElementById("chat");
+var inp = document.getElementById("i");
+var mod = document.getElementById("m");
+
+function send() {
+  var t = inp.value;
+  if (!t) return;
+  chat.innerHTML += '<div class="u"><b>You:</b> ' + t + '</div>';
+  inp.value = "";
+  chat.innerHTML += '<div class="b" id="res"><b>Jarvis:</b> thinking...</div>';
+  chat.scrollTop = chat.scrollHeight;
+  
+  fetch(API + "/api/chat", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      model: mod.value,
+      stream: false,
+      messages: [
+        {role: "system", content: "You are Jarvis. Reply in same language as user."},
+        {role: "user", content: t}
+      ]
+    })
+  })
+  .then(r => r.json())
+  .then(j => {
+    document.getElementById("res").innerHTML = "<b>Jarvis:</b> " + j.message.content;
+    document.getElementById("res").removeAttribute("id");
+  })
+  .catch(e => {
+    document.getElementById("res").innerHTML = "<b>Error:</b> " + e;
+    document.getElementById("res").removeAttribute("id");
+  });
+}
+
+inp.onkeypress = function(e) { if (e.key == "Enter") send(); };
+</script>
+</body>
+</html>
