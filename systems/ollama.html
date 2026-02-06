@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 Ollama設定 - システム</title>
+    <style>
+        :root { --bg: #0d1117; --text: #c9d1d9; --gold: #ffd700; --accent: #58a6ff; }
+        body { font-family: 'SF Mono', monospace; background: var(--bg); color: var(--text); max-width: 800px; margin: 0 auto; padding: 2rem; line-height: 1.8; }
+        h1 { color: var(--gold); font-size: 2.5rem; text-align: center; }
+        h2 { color: var(--accent); border-bottom: 1px solid #30363d; padding-bottom: 0.5rem; }
+        .card { background: #161b22; padding: 1rem; border-radius: 8px; margin: 1rem 0; }
+        .card h3 { margin-top: 0; color: var(--gold); }
+        .model-item { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
+        .model-status { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 4px; }
+        .model-active { background-color: #2ea44f; color: white; }
+        .model-inactive { background-color: #cb2431; color: white; }
+        .back { margin-top: 2rem; text-align: center; }
+    </style>
+</head>
+<body>
+    <h1>🤖 Ollama設定</h1>
+    
+    <h2>📊 現在のモデル</h2>
+    <div class="card">
+        <h3>インストール済みモデル</h3>
+        <div class="model-item">
+            <span>Llama 2</span>
+            <span class="model-status model-active">アクティブ</span>
+        </div>
+        <div class="model-item">
+            <span>Mistral</span>
+            <span class="model-status model-active">アクティブ</span>
+        </div>
+        <div class="model-item">
+            <span>CodeLlama</span>
+            <span class="model-status model-inactive">一時停止中</span>
+        </div>
+    </div>
+    
+    <h2>⚙️ システム設定</h2>
+    <div class="card">
+        <h3>ハードウェア設定</h3>
+        <ul>
+            <li>GPUアクセラレーション: 有効</li>
+            <li>メモリキャッシュ: 16 GB</li>
+            <li>推論バッチサイズ: 動的</li>
+        </ul>
+    </div>
+    
+    <h2>🔧 運用ガイドライン</h2>
+    <div class="card">
+        <h3>モデル管理</h3>
+        <ul>
+            <li>定期的にモデルを更新</li>
+            <li>未使用モデルは削除して容量を確保</li>
+            <li>プライバシーとセキュリティを最優先</li>
+        </ul>
+    </div>
+    
+    <div class="back">
+        <a href="../dreammap.html">← DreamMapに戻る</a>
+    </div>
+</body>
+</html>

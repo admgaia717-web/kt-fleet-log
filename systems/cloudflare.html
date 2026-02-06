@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌐 Cloudflare Pages設定 - システム</title>
+    <style>
+        :root { --bg: #0d1117; --text: #c9d1d9; --gold: #ffd700; --accent: #58a6ff; }
+        body { font-family: 'SF Mono', monospace; background: var(--bg); color: var(--text); max-width: 800px; margin: 0 auto; padding: 2rem; line-height: 1.8; }
+        h1 { color: var(--gold); font-size: 2.5rem; text-align: center; }
+        h2 { color: var(--accent); border-bottom: 1px solid #30363d; padding-bottom: 0.5rem; }
+        .card { background: #161b22; padding: 1rem; border-radius: 8px; margin: 1rem 0; }
+        .card h3 { margin-top: 0; color: var(--gold); }
+        .back { margin-top: 2rem; text-align: center; }
+    </style>
+</head>
+<body>
+    <h1>🌐 Cloudflare Pages設定</h1>
+    
+    <h2>📡 デプロイメント設定</h2>
+    <div class="card">
+        <h3>プロジェクト情報</h3>
+        <p>ステータス: 🚀 稼働中</p>
+        <p>ドメイン: fleet-log.pages.dev</p>
+    </div>
+    
+    <h2>⚙️ 基本設定</h2>
+    <div class="card">
+        <h3>デプロイメント構成</h3>
+        <ul>
+            <li>ソース: GitHub</li>
+            <li>ブランチ: main</li>
+            <li>ビルドコマンド: npm run build</li>
+            <li>出力ディレクトリ: ./dist</li>
+        </ul>
+    </div>
+    
+    <h2>🔐 セキュリティ設定</h2>
+    <div class="card">
+        <h3>アクセス制御</h3>
+        <p>状態: 🔒 プライベート</p>
+        <p>IP制限: 有効</p>
+    </div>
+    
+    <div class="back">
+        <a href="../dreammap.html">← DreamMapに戻る</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔐 APIキー管理 - システム</title>
+    <style>
+        :root { --bg: #0d1117; --text: #c9d1d9; --gold: #ffd700; --accent: #58a6ff; }
+        body { font-family: 'SF Mono', monospace; background: var(--bg); color: var(--text); max-width: 800px; margin: 0 auto; padding: 2rem; line-height: 1.8; }
+        h1 { color: var(--gold); font-size: 2.5rem; text-align: center; }
+        h2 { color: var(--accent); border-bottom: 1px solid #30363d; padding-bottom: 0.5rem; }
+        .card { background: #161b22; padding: 1rem; border-radius: 8px; margin: 1rem 0; }
+        .card h3 { margin-top: 0; color: var(--gold); }
+        .status { padding: 0.5rem; border-radius: 4px; display: inline-block; }
+        .status-active { background-color: #2ea44f; color: white; }
+        .status-revoked { background-color: #cb2431; color: white; }
+        .back { margin-top: 2rem; text-align: center; }
+    </style>
+</head>
+<body>
+    <h1>🔐 APIキー管理</h1>
+    
+    <h2>🌐 現在のAPIキー</h2>
+    <div class="card">
+        <h3>KuCoin API</h3>
+        <p>状態: <span class="status status-active">✅ アクティブ</span></p>
+        <p>最終更新: 2026-02-04</p>
+        <p>アクセスレベル: トレード + データ読み取り</p>
+    </div>
+    
+    <div class="card">
+        <h3>Cloudflare API</h3>
+        <p>状態: <span class="status status-active">✅ アクティブ</span></p>
+        <p>最終更新: 2026-02-03</p>
+        <p>アクセスレベル: デプロイメント管理</p>
+    </div>
+    
+    <h2>⚠️ セキュリティ注意事項</h2>
+    <div class="card">
+        <h3>保管と管理</h3>
+        <ul>
+            <li>全てのキーは安全な環境変数で保管</li>
+            <li>定期的にキーをローテーション</li>
+            <li>不要になったキーは即座に無効化</li>
+        </ul>
+    </div>
+    
+    <div class="back">
+        <a href="../dreammap.html">← DreamMapに戻る</a>
+    </div>
+</body>
+</html>
