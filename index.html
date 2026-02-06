@@ -54,6 +54,26 @@
         <a href="#crew">👥 艦隊構成</a>
     </div>
 
+    <h2 id="auto-decision">🧠 今日の自律判断 <span style="font-size:0.7em;color:#8b949e;">(3件)</span></h2>
+    <div class="card" style="border-left: 4px solid #f85149;">
+        <span class="tag" style="background:#f85149;color:white;">P0</span>
+        <strong>SSL証明書の期限監視を自動化すべき</strong>
+        <p style="margin:0.5rem 0;font-size:0.9em;color:#8b949e;">理由: SEC-001でリスク検出、手動チェックは漏れる</p>
+        <p style="margin:0;font-size:0.85em;">次: cronで毎日チェック、30日以内で自動アラート <span style="color:#3fb950;">(conf=0.90)</span></p>
+    </div>
+    <div class="card" style="border-left: 4px solid #d29922;">
+        <span class="tag" style="background:#d29922;color:black;">P1</span>
+        <strong>4号機スポックのAPI遅延を監視継続</strong>
+        <p style="margin:0.5rem 0;font-size:0.9em;color:#8b949e;">理由: Sonnet 4不安定、KTの作業効率に影響</p>
+        <p style="margin:0;font-size:0.85em;">次: 5分間隔計測、遅延継続ならHaikuフォールバック <span style="color:#3fb950;">(conf=0.75)</span></p>
+    </div>
+    <div class="card" style="border-left: 4px solid #d29922;">
+        <span class="tag" style="background:#d29922;color:black;">P1</span>
+        <strong>自律判断ログの定期生成を開始</strong>
+        <p style="margin:0.5rem 0;font-size:0.9em;color:#8b949e;">理由: KTが動いてると分かる形が必要</p>
+        <p style="margin:0;font-size:0.85em;">次: Heartbeat時に追記、index.html表示 <span style="color:#3fb950;">(conf=0.85)</span></p>
+    </div>
+
     <h2 id="dreammap">🗺️ DreamMap</h2>
     <div class="card">
         <span class="tag" style="background:#ffd700;color:black;">NEW</span>
