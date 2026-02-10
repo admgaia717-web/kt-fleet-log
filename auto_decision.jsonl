@@ -5,3 +5,4 @@
 {"timestamp":"2026-02-06T19:05:59+09:00","priority":"P1","decision":"Heartbeat自動追記システム稼働開始","because":["15分ごとのlaunchd設定完了","auto_decision.jsonl自動更新","index.html件数反映"],"next_actions":["動作監視","エラーログ確認","Dashboard確認"],"confidence":0.95,"links":["~/clawd/fleet-log/scripts/append_auto_decision.sh"]}
 {"timestamp":"2026-02-06T19:20:38+09:00","priority":"P0","decision":"SSL証明書の期限監視継続","because":["SEC-001タスクが未完了"],"next_actions":["cronで自動チェック設定、アラート実装"],"confidence":0.85,"links":["/Users/user/clawd-data/STATE.md"]}
 {"timestamp":"2026-02-10T14:21:35+09:00","priority":"P1","decision":"4号機API遅延継続中","because":["Sonnet 4のAPI応答が不安定"],"next_actions":["レスポンス監視継続、Haikuフォールバック準備"],"confidence":0.8,"links":["/Users/user/clawd-data/STATE.md"]}
+{"timestamp":"2026-02-10T19:37:37+09:00","priority":"P0","decision":"SSL証明書の期限監視継続","because":["SEC-001タスクが未完了"],"next_actions":["cronで自動チェック設定、アラート実装"],"confidence":0.85,"links":["/Users/user/clawd-data/STATE.md"]}
